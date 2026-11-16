@@ -57,10 +57,8 @@
   --bone: #ecece6;
   --grey: #c4c4bd;
 
-  --grain-ink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.09' numOctaves='3' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 16 -12.9'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.38'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .6 -.21'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --grain-bone: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.09' numOctaves='3' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 16 -12.9'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.38'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-ink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .6 -.21'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-bone: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
   /* roles: every palette below sets these */
   --ground: var(--paper);
@@ -84,10 +82,15 @@
   --sfx: "Reggae One", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif;
 
   /* measure */
-  --gutter: clamp(16px, 4vw, 32px);
-  --wrap: 1180px;
+  --gutter: clamp(16px, 4vw, 56px);
+  --wrap: 1360px;
+  --col-gap: clamp(16px, 2.2vw, 32px);
   --bar: 60px;
-  --rule: 3px;
+  --rule: 3px; /* the heavy line: stickers, buttons, the shelf */
+  --hair: 2px; /* the ruling between rows */
+  /* how the halftone is laid on: ink dots multiplied onto light paper */
+  --tone-filter: contrast(40);
+  --tone-blend: multiply;
   /* how many ems wide the name is, as one line and as its longest word (main.js measures the real font) */
   --fit-line: 4.86;
   --fit-word: 2.6;
@@ -108,6 +111,8 @@
     --cast: var(--accent);
     --tone: rgb(236 236 230 / 0.17);
     --grain: var(--grain-bone);
+  --tone-filter: contrast(40) invert(1);
+  --tone-blend: screen;
     --spread: #050505;
     --spread-panel: #161616;
     color-scheme: dark;
@@ -121,6 +126,8 @@
   --cast: var(--accent);
   --tone: rgb(236 236 230 / 0.17);
   --grain: var(--grain-bone);
+  --tone-filter: contrast(40) invert(1);
+  --tone-blend: screen;
   --spread: #050505;
   --spread-panel: #161616;
   color-scheme: dark;
@@ -198,6 +205,8 @@
   --cast: var(--accent);
   --tone: rgb(236 236 230 / 0.17);
   --grain: var(--grain-bone);
+  --tone-filter: contrast(40) invert(1);
+  --tone-blend: screen;
   color-scheme: dark;
 }
 /* Vol. 10: deep violet, old gold lettering */
@@ -213,6 +222,8 @@
   --cast: var(--accent);
   --tone: rgb(236 236 230 / 0.17);
   --grain: var(--grain-bone);
+  --tone-filter: contrast(40) invert(1);
+  --tone-blend: screen;
   color-scheme: dark;
 }
 
@@ -225,6 +236,8 @@
   --cast: var(--accent);
   --tone: rgb(236 236 230 / 0.17);
   --grain: var(--grain-bone);
+  --tone-filter: contrast(40) invert(1);
+  --tone-blend: screen;
 }
 
 /* ---------- Base ---------- */
@@ -366,6 +379,46 @@ button {
   letter-spacing: 0.01em;
 }
 
+/* Vector ink drawings from js/art.js. They draw in the palette's own inks, so they follow it. */
+.art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+.art .k {
+  fill: var(--line);
+}
+.art .w {
+  fill: var(--panel);
+}
+.art .r {
+  fill: var(--accent);
+}
+.art .n {
+  fill: none;
+}
+.art .o,
+.art .o3,
+.art .o2 {
+  stroke: var(--line);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.art .o3 {
+  stroke-width: 3;
+}
+.art .o2 {
+  stroke-width: 1.6;
+}
+.art .lt {
+  font-family: var(--display);
+}
+.art .jp {
+  font-family: var(--sfx);
+}
+
 /* A strip of label tape */
 .tape {
   display: inline-block;
@@ -445,7 +498,7 @@ button {
   padding-right: max(var(--gutter), env(safe-area-inset-right));
   background-color: var(--ground);
   background-image: var(--grain);
-  border-bottom: var(--rule) solid var(--line);
+  border-bottom: var(--hair) solid var(--line);
 }
 .top::after {
   /* reading progress, in the spot colour, laid over the rule */
@@ -454,7 +507,7 @@ button {
   left: 0;
   right: 0;
   top: 100%;
-  height: var(--rule);
+  height: var(--hair);
   background: var(--accent);
   transform-origin: 0 50%;
   transform: scaleX(var(--progress, 0));
@@ -579,15 +632,23 @@ button {
   outline-offset: 2px;
 }
 
-/* ---------- Hero: the cover ---------- */
+/* ---------- Hero: the cover ----------
+   The top is the drawing: focus lines, screentone and the name at full width. Under a rule sits the
+   copy, set plainly, with the price stickers stuck over the join. */
 .hero {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - var(--bar));
+  border-bottom: var(--hair) solid var(--line);
+}
+.cover-art {
   position: relative;
+  flex: 1;
   display: grid;
   align-items: center;
-  min-height: calc(100svh - var(--bar));
-  padding: clamp(28px, 6vh, 64px) 0 clamp(44px, 8vh, 88px);
+  min-height: 300px;
+  padding: clamp(24px, 5vh, 56px) 0 clamp(48px, 9vh, 96px);
   overflow: clip;
-  border-bottom: var(--rule) solid var(--line);
 }
 .focus {
   /* a little oversize, so it can lean with the pointer without showing an edge */
@@ -597,6 +658,23 @@ button {
   height: 106%;
   color: var(--line);
   translate: calc(var(--px, 0) * -18px) calc(var(--py, 0) * -12px);
+}
+/* Screentone: real halftone, the dots growing toward the dark end. A grey ramp under a lattice of
+   soft dots, pushed to pure ink and paper by the contrast filter. */
+.halftone {
+  position: absolute;
+  pointer-events: none;
+  background:
+    radial-gradient(closest-side, rgb(0 0 0 / 0.5), transparent) 0 0 / var(--dot, 11px) var(--dot, 11px),
+    radial-gradient(closest-side, rgb(0 0 0 / 0.5), transparent) calc(var(--dot, 11px) / 2) calc(var(--dot, 11px) / 2) /
+      var(--dot, 11px) var(--dot, 11px),
+    var(--ramp, linear-gradient(to top, #a6a6a6, #fff 88%));
+  filter: var(--tone-filter);
+  mix-blend-mode: var(--tone-blend);
+}
+.cover-art > .halftone {
+  inset: auto 0 0;
+  height: 58%;
 }
 .sfx {
   position: absolute;
@@ -610,16 +688,18 @@ button {
   pointer-events: none;
   user-select: none;
 }
-.hero-grid {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: clamp(24px, 4vh, 44px) clamp(24px, 5vw, 64px);
-  align-items: start;
-}
 .hero-title {
-  grid-column: 1 / -1;
+  position: relative;
   container-type: inline-size;
+}
+/* the name's reading in katakana, set small above it the way a cover carries one */
+.kana {
+  margin: 0 0 clamp(4px, 1vw, 14px) 0.2em;
+  font-family: var(--sfx);
+  font-size: clamp(0.8rem, 1.35vw, 1.2rem);
+  line-height: 1;
+  letter-spacing: 0.62em;
+  color: var(--accent);
 }
 .hero h1 {
   margin-left: -0.02em;
@@ -639,44 +719,56 @@ button {
   margin-top: clamp(10px, 1.6vw, 20px);
 }
 .cover-lines .tape {
-  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
-  transform: rotate(-1.4deg);
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
 }
 .cover-lines .tape ~ .tape {
   background: var(--accent);
   color: var(--on-accent);
-  transform: rotate(1deg);
 }
-.caption {
-  padding: clamp(18px, 2.4vw, 30px);
-  border: var(--rule) solid var(--line);
-  background: var(--panel);
-  box-shadow: 8px 8px 0 var(--cast);
+.cover-foot {
+  position: relative;
+  border-top: var(--hair) solid var(--line);
+  background-color: var(--ground);
+  background-image: var(--grain);
+}
+.cover-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  row-gap: 24px;
+  align-items: start;
+  padding-block: clamp(22px, 3.4vh, 36px) clamp(26px, 4vh, 44px);
 }
 .lede {
-  font-size: clamp(1.3rem, 2.3vw, 1.85rem);
+  grid-column: span 5;
+  font-size: clamp(1.45rem, 2.35vw, 2.15rem);
   font-weight: 800;
-  line-height: 1.22;
-  letter-spacing: -0.01em;
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+}
+.cover-copy {
+  grid-column: span 3;
 }
 .intro {
-  max-width: 62ch;
-  margin-top: 14px;
   color: var(--soft);
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 .links {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 22px;
+  margin-top: 18px;
 }
 
-/* Price-gun stickers for the headline numbers */
+/* Price-gun stickers for the headline numbers: the one place on the page where things sit crooked */
 .stickers {
+  grid-column: span 4;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 14px;
+  gap: 14px 12px;
   align-items: start;
+  margin-top: clamp(-150px, -13vh, -70px);
 }
 .sticker {
   --c: var(--sheet);
@@ -724,13 +816,13 @@ button {
   margin-top: 8px;
 }
 .sticker dt {
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   font-weight: 600;
   line-height: 1.3;
 }
 .sticker dd {
   font-family: var(--display);
-  font-size: clamp(2.5rem, 4.6vw, 4rem);
+  font-size: clamp(2.3rem, 4vw, 3.6rem);
   line-height: 0.92;
   text-transform: uppercase;
 }
@@ -754,56 +846,12 @@ button {
   font-weight: 400;
 }
 
-/* ---------- Tape ticker: a strip stuck across the foot of the cover ---------- */
-.ticker {
-  position: relative;
-  z-index: 3;
-  height: 0;
-  overflow-x: clip;
-}
-.ticker-tape {
-  display: flex;
-  width: max-content;
-  margin-left: -2vw;
-  padding: 0.3em 0 0.12em;
-  background: var(--line);
-  color: var(--ground);
-  box-shadow: 0 6px 0 var(--accent);
-  font-family: var(--display);
-  font-size: clamp(1.7rem, 3.2vw, 2.7rem);
-  line-height: 1;
-  white-space: nowrap;
-  translate: 0 -50%;
-  rotate: -1.3deg;
-  transform-origin: 52vw 50%; /* turn about the middle of the screen, not the middle of the strip */
-}
-.ticker-run {
-  display: flex;
-  flex: none;
-}
-.ticker-run > span {
-  display: inline-flex;
-  align-items: center;
-  padding-left: 0.6em;
-}
-.ticker-run > span::after {
-  content: "";
-  width: 0.3em;
-  height: 0.3em;
-  margin: 0 0 0.16em 0.6em;
-  background: var(--accent);
-  rotate: 45deg;
-}
-@keyframes ticker {
-  to {
-    translate: -100% 0;
-  }
-}
-
-/* ---------- Pages ---------- */
+/* ---------- Pages ----------
+   Every section is set on the same twelve columns. Where the content is a list to read down (About,
+   Experience, Skills) the title stands in the left margin and stays put while the list scrolls by. */
 .page {
   position: relative;
-  padding: clamp(64px, 10vw, 128px) 0;
+  padding: clamp(72px, 9.5vw, 136px) 0;
   background-color: var(--ground);
   background-image: var(--grain);
   color: var(--line);
@@ -812,40 +860,16 @@ button {
   display: grid;
   justify-items: start;
   gap: 18px;
-  margin-bottom: clamp(28px, 4.5vw, 56px);
-}
-.chapter-mark {
-  display: flex;
-  align-items: center;
-  justify-self: stretch;
-  gap: 14px;
-}
-.chapter-mark .tape {
-  flex: none;
-  font-size: 0.9rem;
-  letter-spacing: 0.04em;
-  transform: rotate(-1.6deg);
-}
-.chapter-rule {
-  flex: 1;
-  height: var(--rule);
-  background: var(--line);
-}
-.chapter .chapter-of {
-  flex: none;
-  color: var(--line);
-  font-size: 0.84rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
+  margin-bottom: clamp(36px, 5vw, 72px);
+  container-type: inline-size;
 }
 .chapter h2 {
   position: relative;
   isolation: isolate;
   font-family: var(--display);
-  font-size: clamp(3.3rem, 10vw, 7.25rem);
+  font-size: clamp(3.6rem, 12.5vw, 10.5rem);
   font-weight: 400;
-  line-height: 0.84;
+  line-height: 0.82;
   text-transform: uppercase;
 }
 .chapter h2::after {
@@ -861,129 +885,57 @@ button {
   transform: rotate(-1.2deg) skewX(-14deg);
 }
 .chapter p {
+  max-width: 44ch;
   color: var(--soft);
   font-weight: 600;
 }
-
-/* ---------- About ---------- */
-.about {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: clamp(32px, 6vw, 80px);
-  align-items: start;
-}
-.about-text {
-  display: grid;
-  gap: 1.1em;
-  max-width: 60ch;
-  font-size: clamp(1.14rem, 1.55vw, 1.3rem);
-  line-height: 1.6;
-}
-.note {
-  position: relative;
-  display: grid;
-  gap: 14px;
-  padding: 40px 28px 28px;
-  border: var(--rule) solid #000;
-  background: var(--sheet);
-  color: #000;
-  box-shadow: 9px 9px 0 var(--cast);
-  transform: rotate(1.3deg);
-}
-.note::before,
-.note::after {
-  content: "";
-  position: absolute;
-  top: -15px;
-  width: 104px;
-  height: 30px;
-  background: rgb(255 255 255 / 0.62);
-  border-inline: 2px dashed rgb(0 0 0 / 0.28);
-}
-.note::before {
-  left: 22px;
-  transform: rotate(-5deg);
-}
-.note::after {
-  right: 26px;
-  transform: rotate(4deg);
-}
-.note ul {
-  display: grid;
-  gap: 8px;
-  padding-top: 14px;
-  border-top: 3px solid #000;
-  font-weight: 600;
-}
-.note li {
-  position: relative;
-  padding-left: 22px;
-}
-.note li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.52em;
-  width: 10px;
-  height: 10px;
-  background: #000;
-  transform: rotate(8deg);
+@media (min-width: 900px) {
+  .side {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--col-gap);
+    align-items: start;
+  }
+  .side > .chapter {
+    grid-column: span 4;
+    position: sticky;
+    top: calc(var(--bar) + 40px);
+    margin-bottom: 0;
+  }
+  .side > .chapter h2 {
+    font-size: min(6.6rem, 23cqi);
+  }
+  .side > .body {
+    grid-column: 5 / -1;
+  }
 }
 
-/* ---------- Experience: manga panels ---------- */
-.panels {
-  --cut: 46px;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 14px;
+/* The drawing under a margin title */
+.chapter-art {
+  width: min(100%, 340px);
+  margin-top: clamp(12px, 2.4vw, 36px);
 }
-.panel {
-  grid-column: span 12;
-  padding: var(--rule);
-  background: var(--line);
+/* The shelf only fits the margin on a wide screen; narrower, it sits above the open book. */
+@media (min-width: 900px) and (max-width: 1179px) {
+  #offclock .side {
+    display: block;
+  }
+  #offclock .side > .chapter {
+    position: static;
+    margin-bottom: clamp(36px, 5vw, 64px);
+  }
 }
-.panel-in {
-  --pad: clamp(20px, 3vw, 34px);
-  height: 100%;
-  padding: var(--pad);
-  background: var(--panel);
-}
-.panel:first-child {
-  box-shadow: 9px 9px 0 var(--accent);
-}
-.panel:first-child > .panel-in {
-  background-image: linear-gradient(203deg, transparent 0 9%, var(--panel) 23%),
-    radial-gradient(circle at center, var(--tone) 0 2.2px, transparent 2.8px),
-    radial-gradient(circle at center, var(--tone) 0 2.2px, transparent 2.8px);
-  background-size: 100% 100%, 12px 12px, 12px 12px;
-  background-position: 0 0, 0 0, 6px 6px;
-}
-.sfx-panel {
-  display: none;
-}
+
+/* Shared row furniture: a hairline, a date in the margin */
 .when {
-  display: inline-block;
-  padding: 3px 12px 4px;
-  background: var(--line);
-  color: var(--ground);
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-.panel .when {
-  margin: calc(-1 * var(--pad)) 0 18px calc(-1 * var(--pad));
-}
-.panel h3 {
-  font-size: clamp(1.3rem, 2.3vw, 1.7rem);
-  font-weight: 800;
-  line-height: 1.18;
-  letter-spacing: -0.01em;
+  line-height: 1.5;
 }
 .org {
   position: relative;
-  margin-top: 4px;
+  margin-top: 6px;
   padding-left: 1.15em;
   font-weight: 700;
 }
@@ -1000,7 +952,7 @@ button {
 .points {
   display: grid;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 18px;
   color: var(--soft);
 }
 .points li {
@@ -1013,63 +965,95 @@ button {
   left: 0;
   top: 0.72em;
   width: 10px;
-  height: 3px;
+  height: var(--hair);
   background: var(--line);
 }
-.panel:first-child .points {
-  max-width: 78ch;
+
+/* ---------- About ---------- */
+.about {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: clamp(36px, 5vw, 72px) var(--col-gap);
+  align-items: start;
 }
-@media (min-width: 900px) {
-  .panel:first-child .points {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 40px;
-    max-width: none;
-  }
-  .panel:first-child > .panel-in {
-    position: relative;
-  }
-  .sfx-panel {
-    display: block;
-    top: 14px;
-    right: 26px;
-    color: var(--accent);
-    font-size: 3.6rem;
-    -webkit-text-stroke: 0.07em var(--line);
-    transform: rotate(7deg);
-  }
-  /* Later roles share a tier, split by a slanted gutter */
-  .panel:nth-child(n + 2):nth-child(even) {
-    grid-column: span 7;
-    clip-path: polygon(0 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
-  }
-  .panel:nth-child(n + 2):nth-child(even) > .panel-in {
-    padding-right: calc(var(--pad) + var(--cut));
-    clip-path: polygon(0 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
-  }
-  .panel:nth-child(n + 3):nth-child(odd) {
-    grid-column: span 5;
-    margin-left: calc(-1 * var(--cut));
-    clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%);
-  }
-  .panel:nth-child(n + 3):nth-child(odd) > .panel-in {
-    padding-left: calc(var(--pad) + var(--cut));
-    clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%);
-  }
-  .panel:nth-child(n + 3):nth-child(odd) .when {
-    margin-left: 0;
-  }
-  /* A leftover single role takes the full tier, square */
-  .panel:nth-child(n + 2):nth-child(even):last-child {
-    grid-column: span 12;
-    clip-path: none;
-  }
-  .panel:nth-child(n + 2):nth-child(even):last-child > .panel-in {
-    padding-right: var(--pad);
-    clip-path: none;
-  }
+.about-lead {
+  grid-column: 1 / -1;
+  max-width: 30em;
+  font-size: clamp(1.4rem, 2.15vw, 1.95rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.018em;
+}
+.about-more {
+  grid-column: span 3;
+  display: grid;
+  gap: 1em;
+  color: var(--soft);
+}
+.goals {
+  grid-column: span 5;
+  display: grid;
+  gap: 14px;
+}
+.goals ul {
+  margin-top: 6px;
+  font-weight: 700;
+}
+.goals li {
+  padding: 11px 0;
+  border-top: var(--hair) solid var(--line);
+}
+.goals li:last-child {
+  border-bottom: var(--hair) solid var(--line);
 }
 
-/* ---------- Projects: the night spread ---------- */
+/* ---------- Experience: a ledger of roles ---------- */
+.role {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  padding: 22px 0 clamp(36px, 5vw, 60px);
+  border-top: var(--hair) solid var(--line);
+}
+.role > .when {
+  grid-column: span 2;
+  padding-top: 0.45em;
+}
+.role-body {
+  grid-column: 3 / -1;
+}
+.role h3,
+.role h4 {
+  font-size: clamp(1.3rem, 2vw, 1.65rem);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+}
+.roles > .role:first-child {
+  border-top-width: var(--rule);
+}
+.roles > .role:first-child h3 {
+  font-size: clamp(1.7rem, 3.3vw, 2.9rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+.roles > .role:last-child,
+.edu > .role:last-child {
+  padding-bottom: 0;
+}
+.sfx-role {
+  position: static;
+  display: block;
+  margin: 26px 0 0 -0.04em;
+  color: var(--accent);
+  font-size: clamp(2.2rem, 3.4vw, 3.2rem);
+  -webkit-text-stroke: 0;
+  rotate: -4deg;
+  transform-origin: 0 50%;
+}
+
+/* ---------- Projects: the night spread, an index of titles ---------- */
 .night {
   overflow-x: clip;
 }
@@ -1091,252 +1075,216 @@ button {
 .night::after {
   bottom: -15px;
 }
+.night > .halftone {
+  --ramp: linear-gradient(200deg, #8c8c8c, #fff 46%);
+  --dot: 13px;
+  inset: 0 0 auto auto;
+  width: min(62%, 900px);
+  height: 520px;
+}
 .sfx-projects {
-  top: clamp(110px, 13vw, 190px);
+  top: clamp(70px, 9vw, 150px);
   right: clamp(-36px, -1.5vw, -10px);
-  font-size: clamp(3rem, 8.5vw, 7.5rem);
-  opacity: 0.42;
+  font-size: clamp(3rem, 9.5vw, 9rem);
+  color: transparent;
+  -webkit-text-stroke: 0.025em var(--line);
+  opacity: 0.5;
   transform: rotate(-6deg);
 }
-.shelf-group + .shelf-group {
-  margin-top: clamp(48px, 7vw, 88px);
+.night > .wrap {
+  position: relative;
 }
-.shelf-group > .hand {
+.shelf-group + .shelf-group {
+  margin-top: clamp(64px, 8vw, 120px);
+}
+.shelf-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 28px;
+  padding-bottom: 16px;
+}
+.shelf-head .hand {
   color: var(--line);
 }
 .group-note {
-  max-width: 60ch;
-  margin-top: 6px;
   color: var(--soft);
 }
-.shelf {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-  gap: 30px 28px;
-  margin-top: 26px;
-  isolation: isolate;
-}
-.vol {
-  --c: var(--sheet);
-  --on: #000;
-  --dot: rgb(0 0 0 / 0.26);
+/* One row per project. The title is the button; the whole row is its target, and on hover a sheet
+   of paper is pulled across it. */
+.row {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  border: var(--rule) solid var(--line);
-  background: var(--panel);
-  transition: transform 90ms steps(2);
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  row-gap: 14px;
+  align-items: start;
+  padding: clamp(20px, 2.4vw, 34px) clamp(0px, 1.2vw, 18px) clamp(22px, 2.6vw, 36px);
+  border-top: var(--hair) solid var(--line);
 }
-.vol:nth-child(3n + 2) {
-  --c: #000;
-  --on: var(--bone);
-  --dot: rgb(255 255 255 / 0.3);
+.rows > .row:last-child {
+  border-bottom: var(--hair) solid var(--line);
 }
-.vol:nth-child(3n + 3) {
-  --c: var(--grey);
-}
-.vol::before {
+.row::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--accent);
-  transform: translate(9px, 9px);
-  transition: transform 90ms steps(2);
+  background: var(--bone);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 200ms steps(5);
 }
-.vol:hover {
-  transform: translate(-3px, -3px);
-}
-.vol:hover::before {
-  transform: translate(13px, 13px);
-}
-.vol:active {
-  transform: translate(5px, 5px);
-}
-.vol:active::before {
-  transform: translate(3px, 3px);
-}
-.vol-cover {
-  display: grid;
-  gap: 16px;
-  align-content: space-between;
-  min-height: 190px;
-  padding: 16px 18px 14px;
-  border-bottom: var(--rule) solid var(--line);
-  background-color: var(--c);
-  /* screentone on the right, faded out behind the type so the title reads clean */
-  background-image: linear-gradient(100deg, var(--c) 0 58%, transparent 92%),
-    radial-gradient(circle at center, var(--dot) 0 2.1px, transparent 2.7px),
-    radial-gradient(circle at center, var(--dot) 0 2.1px, transparent 2.7px);
-  background-size: 100% 100%, 11px 11px, 11px 11px;
-  background-position: 0 0, 0 0, 5.5px 5.5px;
-  color: var(--on);
-}
-.vol-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-.vol-title {
+.row-title {
+  grid-column: span 6;
   font-family: var(--display);
-  font-size: clamp(2.3rem, 3.4vw, 3rem);
+  font-size: clamp(2.7rem, 6.2vw, 5.8rem);
   font-weight: 400;
-  line-height: 0.88;
+  line-height: 0.84;
+  text-shadow: 0.04em 0.04em 0 transparent;
 }
-.vol-title button {
+.row-title button {
   padding: 0;
   border: 0;
   background: none;
   text-align: left;
   cursor: pointer;
 }
-.vol-title button::after {
-  /* the whole cover is the target */
+.row-title button::after {
+  /* the whole row is the target */
   content: "";
   position: absolute;
   inset: 0;
   z-index: 1;
 }
-@supports selector(:has(*)) {
-  .vol-title button:focus-visible {
-    outline: none;
-  }
-  .vol:has(button:focus-visible) {
-    outline: 3px solid var(--line);
-    outline-offset: 5px;
-  }
-}
-.vol-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
+.row-about {
+  grid-column: span 4;
+  display: grid;
   gap: 14px;
-  padding: 18px;
-  background: var(--panel);
+  padding-top: 0.5em;
 }
-.vol-body > p:first-child {
+.row-about > p {
   color: var(--soft);
-  font-size: 1rem;
+  font-size: 0.98rem;
   line-height: 1.55;
 }
-.vol-cue {
-  margin-top: auto;
-  padding-top: 6px;
+.row-meta {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  padding-top: 0.5em;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
-.vol-cue::before {
+.row-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  opacity: 0;
+}
+.row-cue::after {
   content: "";
-  display: inline-block;
   width: 0.7em;
   height: 0.7em;
-  margin-right: 0.55em;
   background: var(--accent);
   clip-path: polygon(0 0, 100% 50%, 0 100%);
-  transition: translate 90ms steps(2);
-}
-.vol-title {
-  transition: text-shadow 90ms steps(2);
 }
 @media (hover: hover) {
-  .vol:hover .vol-title {
-    text-shadow: 0.045em 0.045em 0 var(--accent);
+  .row:hover {
+    --line: #000;
+    --soft: #2b2b2b;
+    color: #000;
   }
-  .vol:hover .vol-cue::before {
-    translate: 7px 0;
+  .row:hover::before {
+    transform: scaleX(1);
+  }
+  .row:hover .row-title {
+    text-shadow: 0.04em 0.04em 0 var(--accent);
+  }
+  .row:hover .row-cue {
+    opacity: 1;
   }
 }
-@keyframes tone {
-  /* the screentone slides one dot along, so the loop has no seam */
-  to {
-    background-position: 0 0, 11px 11px, 16.5px 16.5px;
+@media (hover: none) {
+  .row-cue {
+    opacity: 1;
   }
+}
+@supports selector(:has(*)) {
+  .row-title button:focus-visible {
+    outline: none;
+  }
+  .row:has(button:focus-visible) {
+    outline: 3px solid var(--line);
+    outline-offset: 4px;
+  }
+  .row:has(button:focus-visible) .row-cue {
+    opacity: 1;
+  }
+}
+
+/* The drawing that follows the pointer over the index, printed on light stock in every palette */
+.peek {
+  --line: #000;
+  --panel: var(--sheet);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 20;
+  width: clamp(240px, 22vw, 320px);
+  padding: 10px;
+  border: var(--rule) solid #000;
+  background: var(--sheet);
+  box-shadow: 8px 8px 0 var(--accent);
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.6;
+  transition:
+    opacity 120ms steps(2),
+    scale 120ms steps(3);
+}
+.peek.on {
+  opacity: 1;
+  scale: 1;
+}
+.peek img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
 }
 
 /* ---------- Skills and education ---------- */
-.split {
-  display: grid;
-  grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
-  gap: clamp(36px, 6vw, 80px);
-  align-items: start;
-}
 .kit {
   display: grid;
-  gap: 30px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(36px, 4vw, 56px) var(--col-gap);
 }
-.kit-group .tags {
-  gap: 8px 8px;
+.kit-list {
   margin-top: 12px;
-}
-.kit-group .tags li {
-  padding: 5px 12px 6px;
-  border: 0;
-  background: var(--line);
-  color: var(--ground);
-  font-size: 0.95rem;
+  font-size: 1.08rem;
   font-weight: 700;
   line-height: 1.3;
-  clip-path: polygon(0 7%, 2% 0, 99% 4%, 100% 14%, 98.6% 100%, 1% 95%);
 }
-.kit-group .tags li {
-  transition: scale 90ms steps(2);
+.kit-list li {
+  padding: 10px 0 11px;
+  border-top: var(--hair) solid var(--line);
 }
-@media (hover: hover) {
-  .kit-group .tags li:hover {
-    background: var(--accent);
-    color: var(--on-accent);
-    scale: 1.08;
-  }
-}
-.kit-group .tags li:nth-child(3n + 1) {
-  transform: rotate(-1.4deg);
-}
-.kit-group .tags li:nth-child(3n + 2) {
-  transform: rotate(0.9deg);
-}
-.kit-group .tags li:nth-child(3n + 3) {
-  transform: rotate(-0.4deg);
-}
-.kit-group > .hand {
-  --c: var(--accent);
-  display: inline-block;
-  background: linear-gradient(transparent 62%, var(--c) 62% 92%, transparent 92%);
-  padding-inline: 2px 10px;
+.kit-list li:last-child {
+  border-bottom: var(--hair) solid var(--line);
 }
 .school {
-  padding: clamp(20px, 3vw, 32px);
-  border: var(--rule) solid var(--line);
-  background: var(--panel);
-  box-shadow: 9px 9px 0 var(--cast);
+  margin-top: clamp(56px, 7vw, 96px);
 }
-.edu {
-  display: grid;
-  margin-top: 8px;
-}
-.edu > li {
-  padding: 18px 0;
-  border-top: 2px solid var(--line);
-}
-.edu > li:first-child {
-  border-top: 0;
-}
-.edu > li:last-child {
-  padding-bottom: 0;
-}
-.edu h4 {
-  margin-top: 10px;
-  font-size: 1.2rem;
-  font-weight: 800;
-  line-height: 1.25;
-}
-.edu .points {
-  margin-top: 10px;
-  font-size: 0.98rem;
+.school > .hand {
+  margin-bottom: 14px;
 }
 
-/* ---------- Off the clock: a shelf of spines, and the book you pulled out ---------- */
+/* ---------- Off the clock: a shelf of spines, and the book lying open beside it ---------- */
 /* Book colours. Every palette has one spot colour, so a book is the accent, solid ink, bare paper
    or grey: --c is the cloth, --k is what is printed on it. */
 .ink-accent {
@@ -1355,62 +1303,45 @@ button {
   --c: var(--grey);
   --k: #000;
 }
-.bookcase {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: clamp(36px, 5vw, 56px);
-  align-items: start;
+
+/* The case: a screentoned back wall, books standing on a plank */
+.case {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: clamp(10px, 2vw, 24px) 0 34px;
+  padding: 30px 16px 0;
+  border: var(--rule) solid var(--line);
+  border-bottom: 0;
+  background-color: var(--panel);
+  background-image: radial-gradient(circle at center, var(--tone) 0 1.3px, transparent 1.8px);
+  background-size: 9px 9px;
+}
+.case::after {
+  /* the plank */
+  content: "";
+  position: absolute;
+  left: -14px;
+  right: -14px;
+  top: 100%;
+  height: 16px;
+  background: var(--line);
+  box-shadow: 8px 8px 0 var(--accent);
 }
 .rack {
-  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 5px;
-  width: fit-content;
-  max-width: 100%;
-  margin-bottom: 21px;
-  padding: 28px 16px 0 12px;
-}
-.rack::after {
-  /* the board the books stand on */
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: 12px;
-  background: var(--line);
-  box-shadow: 7px 7px 0 var(--accent);
 }
 .book {
   position: relative;
   flex: none;
-  width: 64px;
+  width: 60px;
   height: var(--h, 220px);
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
-  perspective: 700px;
-}
-.book::before {
-  /* the gap it leaves on the shelf while it is out */
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: var(--rule) dashed var(--line);
-  border-bottom: 0;
-  opacity: 0;
-  transition: opacity 160ms steps(2);
-}
-.book-box {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transform-origin: 50% 100%;
-  transition:
-    transform 280ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    opacity 200ms linear;
 }
 .book-spine {
   position: absolute;
@@ -1419,332 +1350,422 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 10px 0 12px;
+  padding: 24px 0 0;
   border: var(--rule) solid var(--line);
-  background: var(--c);
+  background-color: var(--c);
+  /* a round spine: darker at both edges, and the weave of the cloth */
+  background-image:
+    linear-gradient(90deg, rgb(0 0 0 / 0.26), transparent 22%, transparent 70%, rgb(0 0 0 / 0.3)),
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--k) 9%, transparent) 0 1px, transparent 1px 3px);
   color: var(--k);
+  transform-origin: 0 100%;
+  transition: transform 140ms steps(3);
 }
-.book-spine::after,
-.filler::after {
-  /* two bands at the foot of the spine */
+.book-spine::before,
+.book-spine::after {
+  /* head and tail bands, stamped in the print colour */
   content: "";
-  flex: none;
-  align-self: stretch;
-  height: 13px;
-  margin-top: auto;
-  border-block: var(--rule) solid var(--k);
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 7px;
+  border-block: 2px solid var(--k);
+  opacity: 0.85;
+}
+.book-spine::before {
+  top: 7px;
+}
+.book-spine::after {
+  bottom: 9px;
 }
 .book-no {
   flex: none;
   padding: 0 6px 1px;
   background: var(--k);
   color: var(--c);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
   line-height: 1.5;
 }
 .book-title {
   writing-mode: vertical-rl;
   font-family: var(--display);
-  font-size: 2.8rem;
+  font-size: 2.5rem;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
 }
-.book-side {
-  /* the front cover, edge-on until the book is turned */
-  position: absolute;
-  top: 0;
-  left: 100%;
-  width: 124px;
-  height: 100%;
-  border: var(--rule) solid var(--line);
-  border-left: 0;
-  background:
-    repeating-linear-gradient(-45deg, transparent 0 7px, color-mix(in srgb, var(--k) 55%, transparent) 7px 9px),
-    var(--c);
-  transform-origin: 0 50%;
-  transform: rotateY(90deg);
+.book-mark {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin: auto 0 28px;
+  background: var(--k);
+  rotate: 45deg;
 }
-.book:focus-visible {
-  z-index: 3;
+.ink-accent .book-mark,
+.ink-paper .book-mark,
+.ink-grey .book-mark {
+  background: var(--accent);
+}
+.ink-accent .book-mark {
+  background: var(--k);
 }
 @media (hover: hover) {
-  .book:hover {
-    z-index: 3;
-  }
-  .book:hover .book-box {
-    transform: translateY(-18px) rotateY(-36deg);
+  .book:hover .book-spine {
+    transform: translateY(-12px) rotate(-3deg);
   }
 }
-.book:focus-visible .book-box {
-  transform: translateY(-18px) rotateY(-36deg);
+.book:focus-visible {
+  outline: none;
 }
-.book[aria-expanded="true"]::before {
-  opacity: 0.6;
+.book:focus-visible .book-spine {
+  outline: 3px solid var(--line);
+  outline-offset: 4px;
 }
-.book[aria-expanded="true"] .book-box {
-  opacity: 0;
-  transform: translateY(-70%) rotate(-7deg);
+/* the book that is open stands proud of the row */
+.book[aria-current="true"] .book-spine {
+  transform: translateY(-26px);
+}
+.book[aria-current="true"] .book-no {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.ink-accent.book[aria-current="true"] .book-no {
+  background: var(--k);
+  color: var(--c);
 }
 .filler {
   flex: none;
-  display: flex;
-  flex-direction: column;
-  width: 28px;
-  height: 178px;
-  padding-bottom: 12px;
+  width: 26px;
+  height: 168px;
   border: var(--rule) solid var(--line);
-  background: var(--panel);
-}
-.filler::after {
-  border-color: var(--line);
+  background-color: var(--panel);
+  background-image: linear-gradient(90deg, rgb(0 0 0 / 0.16), transparent 30%, transparent 64%, rgb(0 0 0 / 0.2));
 }
 .filler.thin {
-  width: 19px;
-  height: 206px;
-  background: var(--line);
-}
-.filler.thin::after {
-  border-color: var(--ground);
+  width: 16px;
+  height: 196px;
+  background-color: var(--line);
 }
 .filler.short {
-  width: 36px;
-  height: 152px;
+  width: 34px;
+  height: 140px;
+  background-color: var(--grey);
 }
 .filler.tall {
-  height: 236px;
+  height: 226px;
 }
-.filler.lean {
-  margin-left: 31px;
-  transform-origin: 100% 100%;
-  transform: rotate(-10deg);
-}
-
-/* Beside the open book, the shelf stays in view while you read, so the next book is one click away. */
-@media (min-width: 900px) {
-  .rack {
-    position: sticky;
-    top: calc(var(--bar) + 28px);
-  }
-  .filler.wide {
-    display: none;
-  }
-  .desk > .desk-empty {
-    min-height: 300px;
-  }
+.bookend {
+  flex: none;
+  width: 30px;
+  height: 112px;
+  margin-left: 4px;
+  background: var(--line);
+  clip-path: polygon(0 0, 42% 0, 42% 86%, 100% 86%, 100% 100%, 0 100%);
 }
 
+/* The open book: two pages, the drawing on the left and the reading on the right */
 .desk {
   container-type: inline-size;
   min-width: 0;
+  filter: drop-shadow(10px 10px 0 var(--accent));
 }
-.desk-empty {
-  display: grid;
-  place-items: center;
-  max-width: 900px;
-  min-height: 120px;
-  padding: 20px;
-  border: var(--rule) dashed var(--line);
-  color: var(--soft);
-  font-size: 2.4rem;
-  text-align: center;
-}
-.tome {
-  --shift: -25%;
+.spread {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  max-width: 900px;
-  min-height: 360px;
-  margin-right: 9px;
-  perspective: 1700px;
-  animation: tome-in 1200ms cubic-bezier(0.3, 0.75, 0.25, 1) both;
+  perspective: 2400px;
 }
-.tome-page {
-  grid-column: 2;
+.pg {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 14px;
-  padding: clamp(18px, 5cqi, 30px);
+  min-height: 560px;
+  padding: clamp(20px, 3.4cqi, 36px);
   border: var(--rule) solid var(--line);
-  background: var(--panel);
-  box-shadow: 9px 9px 0 var(--accent);
+  background-color: var(--panel);
+  color: var(--line);
 }
-.tome-page > .hand {
-  font-size: 2.6rem;
+.pg-l {
+  border-right-width: 0;
+  background-image: linear-gradient(to left, rgb(0 0 0 / 0.16), transparent 36px);
 }
-.tome-list {
-  align-self: stretch;
+.pg-r {
+  background-image: linear-gradient(to right, rgb(0 0 0 / 0.16), transparent 36px);
+}
+.pg-void {
+  visibility: hidden;
+}
+.pg-band {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: calc(-1 * clamp(20px, 3.4cqi, 36px)) calc(-1 * clamp(20px, 3.4cqi, 36px)) 0;
+  padding: 14px clamp(20px, 3.4cqi, 36px) 10px;
+  border-bottom: var(--rule) solid var(--line);
+  background-color: var(--c);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 9px, color-mix(in srgb, var(--k) 16%, transparent) 9px 11px);
+  color: var(--k);
+}
+.pg-band .brush {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 7cqi, 3.6rem);
+  line-height: 0.86;
+}
+.pg-vol {
+  padding: 1px 8px 2px;
+  background: var(--k);
+  color: var(--c);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.pg-art {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding-top: 8px;
+}
+.pg-art .art {
+  width: min(100%, 300px);
+  max-height: 380px;
+}
+.pg-folio {
+  align-self: flex-start;
+  font-size: 0.82rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+.pg-r > .hand {
+  font-size: clamp(2.2rem, 6cqi, 2.9rem);
+}
+.pg-text {
+  color: var(--soft);
+}
+.pg-list {
   counter-reset: pick;
 }
-.tome-list li {
+.pg-list li {
   counter-increment: pick;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  gap: 10px;
   align-items: baseline;
-  padding: 9px 0;
-  border-top: 2px solid var(--line);
+  padding: 10px 0;
+  border-top: var(--hair) solid var(--line);
   line-height: 1.35;
 }
-.tome-list b {
+.pg-list li:last-child {
+  border-bottom: var(--hair) solid var(--line);
+}
+.pg-list li::before {
+  content: counter(pick, decimal-leading-zero);
+  font-family: var(--display);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.pg-list li:first-child::before {
+  color: var(--accent);
+}
+.pg-list b {
   font-weight: 800;
 }
-.tome-list p {
+.pg-list p {
   margin-top: 2px;
   color: var(--soft);
   font-size: 0.94rem;
 }
-.tome-list li::before {
-  content: counter(pick, decimal-leading-zero);
-  font-family: var(--display);
-  font-size: 1.7rem;
-  line-height: 1;
-}
-.tome-link {
+.pg-link {
   font-weight: 800;
   text-decoration-color: var(--accent);
   text-decoration-thickness: 4px;
   text-underline-offset: 4px;
 }
-.tome-back {
-  min-height: 44px;
+.pg-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: auto;
+  padding-top: 18px;
+}
+.pg-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
   padding: 0 14px;
-  border: 2px solid var(--line);
+  border: var(--hair) solid var(--line);
   background: none;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 90ms steps(2);
+  transition: translate 90ms steps(2);
 }
-.tome-back:hover {
-  transform: rotate(-2deg);
+.pg-step::before,
+.pg-step::after {
+  width: 0.6em;
+  height: 0.7em;
+  background: var(--accent);
+}
+.pg-step.prev::before {
+  content: "";
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+.pg-step.next::after {
+  content: "";
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.pg-step:hover {
   background: var(--line);
-  color: var(--ground);
+  color: var(--panel);
 }
-.tome-cover {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  z-index: 2;
-  width: 50%;
-  pointer-events: none;
-  transform-style: preserve-3d;
-  transform-origin: 0 50%;
-  transform: rotateY(-180deg);
-  animation: cover-open 1200ms cubic-bezier(0.3, 0.75, 0.25, 1) both;
+.pg-step.prev:hover {
+  translate: -3px 0;
 }
-.tome-front,
-.tome-inside {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
+.pg-step.next:hover {
+  translate: 3px 0;
+}
+
+/* The closed cover, before the book is opened */
+.cover {
   justify-content: space-between;
-  gap: 16px;
-  padding: clamp(16px, 5cqi, 28px);
-  border: var(--rule) solid var(--line);
   background-color: var(--c);
+  background-image:
+    linear-gradient(to right, rgb(0 0 0 / 0.22), transparent 30px),
+    repeating-linear-gradient(-45deg, transparent 0 9px, color-mix(in srgb, var(--k) 18%, transparent) 9px 11px);
   color: var(--k);
-  overflow: hidden;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
-.tome-front {
-  box-shadow: 9px 9px 0 var(--cast);
-  background-image: repeating-linear-gradient(-45deg, transparent 0 9px, color-mix(in srgb, var(--k) 18%, transparent) 9px 11px);
-}
-.tome-inside {
-  /* the endpaper: screentone dots */
-  align-items: flex-end;
-  text-align: right;
-  background-image: radial-gradient(color-mix(in srgb, var(--k) 32%, transparent) 1.6px, transparent 2px);
-  background-size: 9px 9px;
-  box-shadow: -9px 9px 0 var(--line);
-  transform: rotateY(180deg);
-}
-.tome-name {
-  font-family: var(--display);
-  font-size: clamp(2.6rem, 17cqi, 5.4rem);
-  line-height: 0.84;
-}
-.tome-no {
+.cover-vol {
   align-self: flex-start;
   padding: 1px 9px 2px;
   background: var(--k);
   color: var(--c);
   font-weight: 800;
 }
-.tome-inside .tome-no {
-  align-self: flex-end;
+.cover-title {
+  font-family: var(--display);
+  font-size: clamp(3rem, 12cqi, 6rem);
+  line-height: 0.84;
 }
-@keyframes tome-in {
-  0% {
-    opacity: 0;
-    transform: translate(var(--shift), -44px) rotate(-5deg);
-  }
-  20% {
-    opacity: 1;
-    transform: translate(var(--shift), 0) rotate(0deg);
-  }
-  38% {
-    opacity: 1;
-    transform: translate(var(--shift), 0) rotate(0deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(0, 0) rotate(0deg);
-  }
+.cover .book-mark {
+  align-self: flex-start;
+  margin: 0;
+  width: 16px;
+  height: 16px;
 }
-@keyframes cover-open {
-  0%,
-  38% {
-    transform: rotateY(0deg);
-  }
-  100% {
+
+/* The leaf that turns: one sheet, a page on each face */
+.leaf {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 2;
+  transform-style: preserve-3d;
+}
+.leaf.fwd {
+  left: 50%;
+  transform-origin: 0 50%;
+}
+.leaf.back {
+  left: 0;
+  transform-origin: 100% 50%;
+}
+.leaf-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.leaf-face > .pg {
+  min-height: 0;
+}
+.leaf-reverse {
+  transform: rotateY(180deg);
+}
+/* a shade sweeps the sheet as it stands up, and is gone by the time it lands */
+.leaf-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+.leaf.run.fwd {
+  animation: leaf-fwd 640ms steps(10, jump-none) both;
+}
+.leaf.run.back {
+  animation: leaf-back 640ms steps(10, jump-none) both;
+}
+.leaf.run .leaf-face::after {
+  animation: leaf-shade 640ms steps(10, jump-none) both;
+}
+.spread.shut {
+  translate: -25% 0;
+}
+.spread.opening {
+  animation: unshut 760ms steps(10, jump-none) both;
+}
+.spread.opening .leaf.run {
+  animation-duration: 760ms;
+}
+.spread.opening .leaf.run .leaf-face::after {
+  animation-duration: 760ms;
+}
+.spread.cut {
+  animation: rv-stamp 260ms steps(4, jump-none) backwards;
+}
+@keyframes leaf-fwd {
+  to {
     transform: rotateY(-180deg);
   }
 }
-@keyframes cover-away {
-  0%,
-  38% {
-    opacity: 1;
-    visibility: visible;
-    transform: rotateY(0deg);
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    visibility: hidden;
-    transform: rotateY(-105deg);
+@keyframes leaf-back {
+  to {
+    transform: rotateY(180deg);
   }
 }
-/* No room for a spread: one page, and the cover swings clear of it. */
-@container (max-width: 599px) {
-  .tome {
-    --shift: 0%;
+@keyframes leaf-shade {
+  50% {
+    opacity: 0.28;
+  }
+}
+@keyframes unshut {
+  from {
+    translate: -25% 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+/* No room for a spread: the drawing sits above the reading, and books change with a cut. */
+@container (max-width: 639px) {
+  .spread {
     grid-template-columns: minmax(0, 1fr);
-    min-height: 300px;
   }
-  .tome-page {
-    grid-column: 1;
+  .pg {
+    min-height: 0;
   }
-  .tome-cover {
-    left: 0;
-    width: 100%;
-    opacity: 0;
-    visibility: hidden;
-    transform: rotateY(-105deg);
-    animation-name: cover-away;
+  .pg-l {
+    border-right-width: var(--rule);
+    border-bottom-width: 0;
+    background-image: none;
   }
-  .tome-name {
-    font-size: clamp(2.6rem, 20cqi, 6rem);
+  .pg-r {
+    background-image: none;
+  }
+  .pg-art .art {
+    width: min(100%, 220px);
+  }
+  .pg-folio {
+    display: none;
   }
 }
 
@@ -1898,6 +1919,12 @@ button {
   font-weight: 600;
   line-height: 1.45;
 }
+.reader-art {
+  padding: clamp(10px, 2vw, 18px);
+  border: var(--rule) solid var(--line);
+  background-color: var(--ground);
+  background-image: var(--grain);
+}
 .reader-img {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -1967,8 +1994,14 @@ button {
   .js .focus {
     animation: burst 320ms steps(3, jump-none) both;
   }
+  .js .cover-art > .halftone {
+    animation: rv-fade 300ms steps(3, jump-none) 200ms both;
+  }
   .js .hero h1 {
     animation: stamp 260ms steps(3, jump-none) 120ms both;
+  }
+  .js .kana {
+    animation: rv-fade 200ms steps(2, jump-none) 340ms both;
   }
   .js .cover-lines .tape,
   .js .sticker {
@@ -1979,48 +2012,20 @@ button {
     animation-delay: calc(520ms + var(--i, 0) * 80ms);
   }
 }
-/* ---------- Motion: cut in on scroll, drawn on twos ----------
-   main.js adds .rv to each piece and .in once it is on screen. Nothing is hidden unless motion is
-   welcome and the script is running. The moves use translate / rotate / scale on their own, so they
-   stack with the tilts and slants set through transform. */
+
+/* ---------- Motion ----------
+   Kept to the moments that mean something: each section title is stamped down as you reach it and
+   its brush swash is pulled across. Nothing is hidden unless motion is welcome and the script runs.
+   The moves use translate / rotate / scale on their own, so they stack with transform. */
 @media (prefers-reduced-motion: no-preference) {
-  .js .caption {
-    animation: rv-up 300ms steps(4, jump-none) 300ms both;
-  }
-  .ticker-run {
-    animation: ticker 70s linear infinite;
-  }
   .js .rv:not(.in) {
     opacity: 0;
   }
-  .js .rv.in {
-    animation: rv-up 380ms steps(5, jump-none) backwards;
-    animation-delay: calc(var(--d, 0) * 70ms);
-  }
-  .js .rv-slap.in {
-    animation-name: rv-slap;
-    animation-duration: 300ms;
-  }
   .js .rv-stamp.in {
-    animation-name: rv-stamp;
-    animation-duration: 280ms;
+    animation: rv-stamp 280ms steps(4, jump-none) backwards;
   }
-  /* the brush swash is pulled across under the title just after it lands */
   .js .rv-stamp.in::after {
     animation: swash 360ms steps(6, jump-none) 200ms backwards;
-  }
-  .js .rv-rule.in {
-    animation-name: rv-fade;
-  }
-  .js .rv-rule.in .chapter-rule {
-    transform-origin: 0 50%;
-    animation: rule 520ms steps(8, jump-none) 120ms backwards;
-  }
-  .sfx-panel {
-    animation: rv-slap 240ms steps(3, jump-none) 420ms backwards;
-  }
-  .js .panel.rv:not(.in) .sfx-panel {
-    animation: none;
   }
   .reader[open] {
     animation: reader-in 300ms steps(4, jump-none) backwards;
@@ -2028,32 +2033,10 @@ button {
   .reader[open]::backdrop {
     animation: rv-fade 200ms steps(3, jump-none) backwards;
   }
-  .reader[open] .steps li {
-    animation: rv-up 300ms steps(4, jump-none) backwards;
-    animation-delay: calc(180ms + var(--n, 0) * 60ms);
-  }
-  @media (hover: hover) {
-    .vol:hover .vol-cover {
-      animation: tone 520ms steps(4) infinite;
-    }
-  }
-}
-@keyframes rv-up {
-  from {
-    opacity: 0;
-    translate: 0 30px;
-  }
 }
 @keyframes rv-fade {
   from {
     opacity: 0;
-  }
-}
-@keyframes rv-slap {
-  from {
-    opacity: 0;
-    scale: 1.16;
-    rotate: -4deg;
   }
 }
 @keyframes rv-stamp {
@@ -2069,11 +2052,6 @@ button {
   }
   to {
     clip-path: inset(-60% -10% -60% -10%);
-  }
-}
-@keyframes rule {
-  from {
-    transform: scaleX(0);
   }
 }
 @keyframes reader-in {
@@ -2143,7 +2121,6 @@ button {
     clip-path: circle(150vmax at var(--vx, 100%) var(--vy, 0));
   }
 }
-
 @keyframes burst {
   from {
     opacity: 0;
@@ -2173,26 +2150,45 @@ button {
 }
 
 /* ---------- Smaller screens ---------- */
+@media (max-width: 1099px) {
+  .lede {
+    grid-column: span 7;
+  }
+  .cover-copy {
+    grid-column: span 5;
+  }
+  .stickers {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 6px;
+  }
+  .row-title {
+    grid-column: 1 / -1;
+  }
+  .row-about {
+    grid-column: span 9;
+    padding-top: 0;
+  }
+  .row-meta {
+    grid-column: span 3;
+    padding-top: 0;
+  }
+}
 @media (max-width: 899px) {
-  .hero-grid,
+  .chapter-art {
+    width: min(64%, 240px);
+  }
   .about,
-  .split,
-  .bookcase {
+  .role {
     grid-template-columns: minmax(0, 1fr);
   }
-  .rack,
-  .tome,
-  .desk-empty {
-    margin-inline: auto;
+  .about > *,
+  .role > .when,
+  .role-body {
+    grid-column: 1 / -1;
   }
-  .tome {
-    translate: -4px 0; /* the hard shadow hangs off the right, so nudge the page back to centre */
-  }
-  .hero {
-    align-items: start;
-  }
-  .note {
-    transform: rotate(0.8deg);
+  .role > .when {
+    padding: 0 0 8px;
   }
 }
 @media (max-width: 719px) {
@@ -2204,8 +2200,36 @@ button {
   .hero h1 .w {
     display: block;
   }
-  .caption {
-    box-shadow: 6px 6px 0 var(--cast);
+  .cover-art {
+    flex: none;
+    padding-bottom: 40px;
+  }
+  .kana {
+    margin-bottom: 18px;
+    letter-spacing: 0.4em;
+  }
+  .lede,
+  .cover-copy {
+    grid-column: 1 / -1;
+  }
+  .stickers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kit {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .row-about,
+  .row-meta {
+    grid-column: 1 / -1;
+  }
+  .row-meta {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+  .row-cue {
+    margin: 0 0 0 auto;
   }
   .steps li {
     padding: 62px 16px 16px;
@@ -2235,12 +2259,14 @@ button {
   .filler:not(.thin) {
     display: none;
   }
+  .case {
+    padding-inline: 10px;
+  }
   .rack {
     gap: 4px;
-    padding-inline: 6px;
   }
   .book {
-    width: 56px;
+    width: 54px;
   }
   .sections {
     margin-left: -8px;
@@ -2294,14 +2320,17 @@ button {
   }
   .top,
   .focus,
+  .halftone,
   .sfx,
+  .kana,
   .night::before,
   .night::after,
-  .vol-cue,
-  .ticker,
-  .chapter-mark,
+  .row-cue,
   .colophon-name,
   .to-top,
+  .chapter-art,
+  .reader-art,
+  .peek,
   .signoff,
   #offclock,
   .skip {
@@ -2309,10 +2338,19 @@ button {
   }
   .hero {
     min-height: 0;
+  }
+  .cover-art {
+    min-height: 0;
     padding: 0 0 24px;
+  }
+  .stickers {
+    margin-top: 0;
   }
   .page {
     padding: 28px 0;
+  }
+  .side > .chapter {
+    position: static;
   }
   .hero h1 {
     text-shadow: none;
@@ -2321,21 +2359,11 @@ button {
     background: #fff;
     color: #000;
   }
-  .panel,
-  .panel:first-child,
-  .vol,
-  .note,
-  .school,
-  .sticker,
-  .caption {
+  .role,
+  .row,
+  .sticker {
     break-inside: avoid;
     box-shadow: none;
-  }
-  .shelf-group > .hand {
-    color: #000;
-  }
-  .vol::before {
-    display: none;
   }
   .rv {
     opacity: 1 !important;
