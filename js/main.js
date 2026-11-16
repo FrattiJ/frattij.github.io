@@ -210,6 +210,9 @@
       )
     );
 
+    // the cover drawing stands behind the name, at the right, aimed at the stickers
+    const gun = drawing("cover", "cover-art-piece");
+    if (gun) $(".cover-art").insertBefore(gun, $(".cover-art .hero-title"));
     drawFocusLines();
     fitName();
     tallyStickers();
@@ -359,9 +362,13 @@
 
   function projectRow(p) {
     const open = lettered(h("button", { type: "button", "aria-haspopup": "dialog", onclick: () => openProject(p) }), p.title);
+    const pic = has(p.image)
+      ? h("div", { class: "row-art" }, h("img", { src: p.image, alt: "", decoding: "async", loading: "lazy" }))
+      : drawing(p.id, "row-art");
     return h(
       "article",
-      { class: "row", "data-art": hasArt(p.id) || has(p.image) ? p.id : null },
+      { class: pic ? "row has-art" : "row" },
+      pic,
       h("h4", { class: "row-title" }, open),
       h("div", { class: "row-about" }, h("p", {}, p.summary), techTags(p.tags)),
       h(
@@ -501,7 +508,6 @@
           type: "button",
           style: `--h:${spineHeight(b.spine)}px`,
           "aria-controls": "desk",
-          onclick: () => turnTo(i),
         },
         h(
           "span",
@@ -526,16 +532,6 @@
         h("p", { class: "pg-folio", "aria-hidden": "true" }, `${two(i + 1)} / ${two(books.length)}`)
       );
 
-    const step = (i, dir) =>
-      books[i]
-        ? h(
-            "button",
-            { class: `pg-step ${dir}`, type: "button", onclick: () => turnTo(i, true) },
-            h("span", { class: "vh" }, dir === "prev" ? "Previous book: " : "Next book: "),
-            books[i].spine
-          )
-        : h("span");
-
     const rightPage = (b, i) =>
       h(
         "div",
@@ -559,12 +555,23 @@
           : null,
         b.link && has(b.link.url)
           ? h("p", {}, h("a", { class: "pg-link", ...linkAttrs(b.link.url) }, b.link.label, newTabNote(b.link.url)))
-          : null,
-        h("nav", { class: "pg-nav", "aria-label": "More books" }, step(i - 1, "prev"), step(i + 1, "next"))
+          : null
       );
 
-    const spread = (i) =>
+    const cover = (i) =>
+      h(
+        "div",
+        { class: `pg cover ${cloth(books[i])}` },
+        h("p", { class: "cover-vol" }, `Vol. ${two(i + 1)}`),
+        h("p", { class: "cover-title" }, brush(books[i].spine)),
+        h("span", { class: "book-mark" })
+      );
+    const blank = () => h("div", { class: "pg pg-void" });
+
+    const openBook = (i) =>
       h("article", { class: "spread", "aria-labelledby": `bookTitle-${i}` }, leftPage(books[i], i), rightPage(books[i], i));
+    // a shut book: only its front cover, lying where the right-hand page would be
+    const shutBook = (i) => h("div", { class: "spread", "aria-hidden": "true" }, blank(), cover(i));
 
     // A copy of a page for the animation: no ids outside its drawing, nothing to focus.
     const copy = (page) => {
@@ -573,90 +580,133 @@
       c.inert = true;
       return c;
     };
-
-    let current = -1;
-    let settle = null; // finishes a turn in progress at once
-
-    // The leaf: one sheet with a page on each side, turned about the spine.
-    function turn(next, from, forward, onFace) {
-      const [newL, newR] = next.children;
-      const landing = forward ? newL : newR; // where the leaf comes to rest
-      const placeholder = from ? copy(forward ? from.children[0] : from.children[1]) : h("div", { class: "pg pg-void" });
-      const leaf = h(
+    // the cover as one sheet: the cover on one face, the first page on the other
+    const leaf = (side, face, reverse) => {
+      const el = h(
         "div",
-        { class: `leaf ${forward ? "fwd" : "back"}`, "aria-hidden": "true" },
-        h("div", { class: "leaf-face" }, onFace),
-        h("div", { class: "leaf-face leaf-reverse" }, copy(landing))
+        { class: `leaf ${side}`, "aria-hidden": "true" },
+        h("div", { class: "leaf-face" }, face),
+        h("div", { class: "leaf-face leaf-reverse" }, reverse)
       );
-      leaf.inert = true;
-      next.replaceChild(placeholder, landing);
-      next.append(leaf);
-      const done = () => {
-        if (settle !== done) return;
-        settle = null;
-        if (placeholder.parentNode === next) next.replaceChild(landing, placeholder);
-        leaf.remove();
-        next.classList.remove("shut", "opening");
-      };
-      settle = done;
-      leaf.addEventListener("animationend", done, { once: true });
-      return leaf;
+      el.inert = true;
+      return el;
+    };
+
+    // Everything moves in hard frames, like the rest of the page.
+    const run = (el, keyframes, ms, n) =>
+      el.animate(keyframes, { duration: ms, easing: `steps(${n}, jump-none)`, fill: "forwards" }).finished.then(
+        () => true,
+        () => false
+      );
+    const CENTRE = "-25% 0"; // a shut book sits in the middle of the desk, not on the right
+    const SHELF = "-62% 0"; // and goes back toward the shelf, which stands to its left
+
+    const markOpen = (i) => spines.forEach((el, n) => el.setAttribute("aria-current", n === i ? "true" : "false"));
+    let current = -1;
+    let moving = 0; // counts sequences; a newer one stops an older one where it is
+
+    // Open a shut book: the cover swings over to the left while the book slides from the middle.
+    async function open(i, token) {
+      const book = openBook(i);
+      const left = book.children[0];
+      const sheet = leaf("fwd", cover(i), copy(left));
+      book.replaceChild(blank(), left);
+      book.append(sheet);
+      book.style.translate = CENTRE;
+      desk.replaceChildren(book);
+      await Promise.all([
+        run(sheet, [{ transform: "rotateY(0)" }, { transform: "rotateY(-180deg)" }], 640, 10),
+        run(book, [{ translate: CENTRE }, { translate: "0 0" }], 640, 10),
+      ]);
+      if (token !== moving) return;
+      book.getAnimations().forEach((a) => a.cancel());
+      book.style.translate = "";
+      book.replaceChild(left, book.children[0]);
+      sheet.remove();
     }
 
-    function turnTo(i, fromPage) {
+    // Close the open book: the left-hand page and the cover swing over onto the right.
+    async function close(i, token) {
+      const book = desk.querySelector(".spread");
+      const left = book.children[0];
+      const sheet = leaf("back", copy(left), cover(i));
+      book.replaceChild(blank(), left);
+      book.append(sheet);
+      await Promise.all([
+        run(sheet, [{ transform: "rotateY(0)" }, { transform: "rotateY(180deg)" }], 460, 8),
+        run(book, [{ translate: "0 0" }, { translate: CENTRE }], 460, 8),
+      ]);
+      if (token !== moving) return false;
+      const shut = shutBook(i);
+      shut.style.translate = CENTRE;
+      desk.replaceChildren(shut);
+      return true;
+    }
+
+    // Put the shut book back toward the shelf, then take the next one down from it.
+    async function shelve(token) {
+      const shut = desk.querySelector(".spread");
+      await run(shut, [{ translate: CENTRE, scale: 1, opacity: 1 }, { translate: SHELF, scale: 0.72, opacity: 0 }], 300, 5);
+      return token === moving;
+    }
+    async function takeDown(i, token) {
+      const shut = shutBook(i);
+      desk.replaceChildren(shut);
+      await run(shut, [{ translate: SHELF, scale: 0.72, opacity: 0 }, { translate: CENTRE, scale: 1, opacity: 1 }], 320, 5);
+      return token === moving;
+    }
+
+    // Choosing another book: shut the open one, put it back, take the new one down and open it.
+    async function choose(i) {
       if (i === current || !books[i]) return;
-      if (settle) settle();
-      const old = desk.querySelector(".spread");
-      const next = spread(i);
-      const forward = i > current;
+      const from = current;
       current = i;
-      spines.forEach((el, n) => el.setAttribute("aria-current", n === i ? "true" : "false"));
-
-      const still = stillPlease.matches || desk.clientWidth < 640;
-      if (!old || still) {
-        desk.replaceChildren(next);
-        if (old && !stillPlease.matches) next.classList.add("cut");
-      } else {
-        const lifted = copy(forward ? old.children[1] : old.children[0]);
-        const leaf = turn(next, old, forward, lifted);
-        desk.replaceChildren(next);
-        leaf.classList.add("run");
+      const token = ++moving;
+      const busy = desk.getAnimations({ subtree: true }).some((a) => a.playState === "running");
+      // no room, no motion, or another change still under way: go straight to the book
+      if (stillPlease.matches || desk.clientWidth < 640 || busy || from < 0) {
+        desk.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+        markOpen(i);
+        const book = openBook(i);
+        desk.replaceChildren(book);
+        if (from >= 0 && !stillPlease.matches) book.classList.add("cut");
+        return;
       }
-      // the page that held the button is gone, so keep the reader's place on the shelf
-      if (fromPage) spines[i].focus({ preventScroll: true });
+      if (!desk.querySelector(".spread > .pg-l")) {
+        // the first book was still shut: nothing to close
+        spines[from].setAttribute("aria-current", "false");
+        if (!(await shelve(token))) return;
+      } else {
+        if (!(await close(from, token))) return;
+        spines[from].setAttribute("aria-current", "false"); // its spine drops back into the row
+        if (!(await shelve(token))) return;
+      }
+      markOpen(i); // and the new one comes up out of the row
+      if (!(await takeDown(i, token))) return;
+      await open(i, token);
     }
 
-    // Start with the first book shut in the middle of the desk, and open it once it is in view.
+    spines.forEach((el, i) => el.addEventListener("click", () => choose(i)));
+
+    // The first book starts shut in the middle of the desk, and opens the first time it is in view.
     current = 0;
-    spines[0].setAttribute("aria-current", "true");
-    spines.slice(1).forEach((el) => el.setAttribute("aria-current", "false"));
-    const first = spread(0);
+    markOpen(0);
     const canOpen = !stillPlease.matches && "IntersectionObserver" in window && desk.clientWidth >= 640;
     if (canOpen) {
-      const b = books[0];
-      const cover = h(
-        "div",
-        { class: `pg cover ${cloth(b)}` },
-        h("p", { class: "cover-vol" }, `Vol. ${two(1)}`),
-        h("p", { class: "cover-title" }, brush(b.spine)),
-        h("span", { class: "book-mark" })
-      );
-      const leaf = turn(first, null, true, cover);
-      first.classList.add("shut");
-      desk.append(first);
+      const shut = shutBook(0);
+      shut.style.translate = CENTRE;
+      desk.append(shut);
       const io = new IntersectionObserver(
         (entries) => {
           if (!entries.some((e) => e.isIntersecting)) return;
           io.disconnect();
-          if (!leaf.isConnected) return;
-          first.classList.add("opening");
-          leaf.classList.add("run");
+          if (current === 0 && desk.firstChild === shut) open(0, moving);
         },
         { threshold: 0.45 }
       );
       io.observe(desk);
     } else {
-      desk.append(first);
+      desk.append(openBook(0));
     }
   }
 
@@ -676,53 +726,6 @@
       const art = chapter && drawing(section.id, "chapter-art");
       if (art) chapter.append(art);
     });
-  }
-
-  /* ---------- Projects: the drawing follows the pointer over the index ---------- */
-  function initPeek() {
-    const rows = [...document.querySelectorAll(".row[data-art]")];
-    if (!rows.length || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    const peek = h("div", { class: "peek", "aria-hidden": "true" });
-    document.body.append(peek);
-    const byId = new Map((SITE.projects || []).map((p) => [p.id, p]));
-    const cache = new Map();
-    const fill = (id) => {
-      if (!cache.has(id)) {
-        const p = byId.get(id);
-        const el = has(p && p.image) ? h("img", { src: p.image, alt: "", decoding: "async" }) : drawing(id, "peek-art");
-        cache.set(id, el);
-      }
-      peek.replaceChildren(cache.get(id));
-    };
-    let x = 0, y = 0, tx = 0, ty = 0, raf = 0;
-    const tick = () => {
-      const lag = stillPlease.matches ? 1 : 0.2;
-      const dx = (tx - x) * lag;
-      x += dx;
-      y += (ty - y) * lag;
-      const tilt = Math.max(-7, Math.min(7, dx * 0.5));
-      peek.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(tilt - 2).toFixed(2)}deg)`;
-      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.3 ? requestAnimationFrame(tick) : 0;
-    };
-    const aim = (e) => {
-      tx = e.clientX + 28;
-      ty = e.clientY - peek.offsetHeight * 0.6;
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-    rows.forEach((row) => {
-      row.addEventListener("pointerenter", (e) => {
-        fill(row.dataset.art);
-        if (!peek.classList.contains("on")) {
-          x = tx = e.clientX + 28;
-          y = ty = e.clientY - peek.offsetHeight * 0.6;
-          tick();
-        }
-        peek.classList.add("on");
-      });
-      row.addEventListener("pointermove", aim);
-      row.addEventListener("pointerleave", () => peek.classList.remove("on"));
-    });
-    addEventListener("scroll", () => peek.classList.remove("on"), { passive: true });
   }
 
   /* ---------- Section titles are stamped down as you reach them ----------
@@ -765,30 +768,6 @@
     set();
   }
 
-  /* ---------- Cover depth: the focus lines, name and stickers lean with the pointer ---------- */
-  function initCoverDepth() {
-    const hero = $(".hero");
-    if (!hero || stillPlease.matches || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    let tx = 0, ty = 0, x = 0, y = 0, raf = 0;
-    const tick = () => {
-      x += (tx - x) * 0.12;
-      y += (ty - y) * 0.12;
-      hero.style.setProperty("--px", x.toFixed(3));
-      hero.style.setProperty("--py", y.toFixed(3));
-      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.002 ? requestAnimationFrame(tick) : 0;
-    };
-    const aim = (nx, ny) => {
-      tx = nx;
-      ty = ny;
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-    hero.addEventListener("pointermove", (e) => {
-      const r = hero.getBoundingClientRect();
-      aim(((e.clientX - r.left) / r.width) * 2 - 1, ((e.clientY - r.top) / r.height) * 2 - 1);
-    });
-    hero.addEventListener("pointerleave", () => aim(0, 0));
-  }
-
   /* ---------- Section marker in the top bar ---------- */
   function initSectionMarker() {
     if (!("IntersectionObserver" in window)) return;
@@ -821,6 +800,5 @@
   initSectionMarker();
   initReveals();
   initProgress();
-  initCoverDepth();
-  initPeek();
+
 })();
