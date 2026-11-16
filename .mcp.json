@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "design-inspiration": {
+      "type": "stdio",
+      "command": "bash",
+      "args": [
+        ".claude/mcp/design-inspiration.sh"
+      ]
+    },
+    "21st-magic": {
+      "type": "http",
+      "url": "https://21st.dev/api/mcp",
+      "headers": {
+        "x-api-key": "${API_KEY_21ST:-set-API_KEY_21ST}"
+      }
+    },
+    "relume-library": {
+      "type": "http",
+      "url": "https://relume-library-mcp.relume.io/mcp"
+    },
+    "relume-publish": {
+      "type": "http",
+      "url": "https://relume-publish-mcp.relume.io/mcp"
+    }
+  }
+}
