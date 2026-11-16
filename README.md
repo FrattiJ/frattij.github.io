@@ -16,6 +16,7 @@ Plain HTML, CSS, and JavaScript. No framework, no build step, no dependencies, n
 | Add a project                   | Copy an entry in `projects`, set its `group`           |
 | Update experience or education  | `resume.experience`, `resume.education`                |
 | Change the books on the shelf   | `offClock.books` (one book per interest)               |
+| Use a real image for a project  | `image` on the project (it replaces the drawing)       |
 | Change the links                | `links` (the first link is the main button)            |
 | Change the katakana on the cover | `nameKana` (leave it `""` to hide it)                 |
 
@@ -35,6 +36,17 @@ Colors and fonts are tokens at the top of [`css/style.css`](css/style.css). Each
 | Japanese sound effects | Reggae One      | SIL Open Font License 1.1                            |
 
 All four are self-hosted in [`assets/fonts`](assets/fonts), with their license texts beside them. See [`assets/fonts/README.md`](assets/fonts/README.md) for the terms that matter, including how to switch the hand-lettered notes to Muneban once it is licensed for this site.
+
+## Drawings
+
+Until real artwork is ready, the site carries placeholder illustrations drawn as vector ink in [`js/art.js`](js/art.js): one under each margin title (About, Experience, Skills), one per project, and one per book on the shelf. They are drawn in the palette's own inks, so they change with it, dark mode included. Each is keyed by a section, project or book `id`.
+
+- To use a real image for a project, give it `image` (and `imageAlt`) in `content.js`. It replaces the drawing in the write-up and in the preview that follows the pointer over the project index.
+- To replace any other drawing, change or delete its entry in `art.js`. A missing entry simply leaves the space out.
+
+## The shelf
+
+The shelf stands in the margin beside an open book. The first book starts shut and swings open the first time it comes into view. Choosing another spine, or the buttons at the foot of the page, turns the page: forward lifts the right-hand page over to the left, back lifts the left-hand page over to the right. The open book's spine stands proud of the row. Where there is no room for a two-page spread, the drawing sits above the reading and books change with a cut.
 
 ## Layout and motion
 

@@ -78,6 +78,16 @@
     return el;
   };
 
+  /* ---------- Drawings ----------
+     js/art.js draws a placeholder for a section, project or book by its id. A project's own image wins. */
+  const hasArt = (id) => typeof ART === "object" && typeof ART[id] === "function";
+  function drawing(id, cls) {
+    if (!hasArt(id)) return null;
+    const el = h("div", { class: cls, "aria-hidden": "true" });
+    el.innerHTML = ART[id]();
+    return el;
+  }
+
   /* ---------- Palettes ----------
      Each id matches a :root[data-theme="..."] block in css/style.css. ground and accent are repeated
      here only to paint the swatches and the browser's theme colour. */
@@ -351,7 +361,7 @@
     const open = lettered(h("button", { type: "button", "aria-haspopup": "dialog", onclick: () => openProject(p) }), p.title);
     return h(
       "article",
-      { class: "row" },
+      { class: "row", "data-art": hasArt(p.id) || has(p.image) ? p.id : null },
       h("h4", { class: "row-title" }, open),
       h("div", { class: "row-about" }, h("p", {}, p.summary), techTags(p.tags)),
       h(
@@ -377,7 +387,7 @@
         h("p", { class: "reader-lede" }, p.summary),
         has(p.image)
           ? h("img", { class: "reader-img", src: p.image, alt: p.imageAlt || `${p.title} screenshot`, decoding: "async" })
-          : null,
+          : drawing(p.id, "reader-art"),
         techTags(p.tags),
         (p.process || []).length
           ? h(
@@ -455,7 +465,9 @@
     }
   }
 
-  /* ---------- Off the clock: spines on a shelf, and the book you pulled out ---------- */
+  /* ---------- Off the clock: a shelf of spines, and the book lying open beside it ----------
+     The first book is open from the start. Choosing another turns the page: forward lifts the right-hand
+     page over to the left, back lifts the left-hand page over to the right. */
   function renderOffClock() {
     const data = SITE.offClock || {};
     const books = (data.books || []).filter((b) => has(b.spine));
@@ -473,89 +485,179 @@
 
     const rack = $("#rack");
     const desk = $("#desk");
+    const two = (n) => String(n).padStart(2, "0");
+    const cloth = (b) => `ink-${b.color || "accent"}`;
     // a longer word needs a taller spine, which also keeps the row from looking like a fence
-    const spineHeight = (word) => Math.min(320, Math.max(190, 120 + [...word].length * 20));
+    const spineHeight = (word) => Math.min(272, Math.max(184, 112 + [...word].length * 16));
     // plain, unlettered books between the real ones, so the shelf reads as a shelf
     const filler = (cls) => h("span", { class: `filler ${cls}`, "aria-hidden": "true" });
-    const FILLERS = [["thin"], ["lean wide"], ["short"], ["thin tall wide", "short wide"]];
-    let current = null;
+    const FILLERS = [["thin"], ["short"], ["thin tall"]];
 
     const spines = books.map((b, i) =>
       h(
         "button",
         {
-          class: `book ink-${b.color || "accent"}`,
+          class: `book ${cloth(b)}`,
           type: "button",
           style: `--h:${spineHeight(b.spine)}px`,
-          "aria-expanded": "false",
           "aria-controls": "desk",
-          onclick: () => pick(i),
+          onclick: () => turnTo(i),
         },
         h(
           "span",
-          { class: "book-box" },
-          h(
-            "span",
-            { class: "book-spine" },
-            h("span", { class: "book-no", "aria-hidden": "true" }, String(i + 1).padStart(2, "0")),
-            h("span", { class: "book-title" }, b.spine)
-          ),
-          h("span", { class: "book-side", "aria-hidden": "true" })
+          { class: "book-spine" },
+          h("span", { class: "book-no", "aria-hidden": "true" }, two(i + 1)),
+          h("span", { class: "book-title" }, b.spine),
+          h("span", { class: "book-mark", "aria-hidden": "true" })
         )
       )
     );
     rack.append(
-      ...spines.flatMap((el, i) => [el, ...(FILLERS[i % FILLERS.length] || []).map(filler)])
+      ...spines.flatMap((el, i) => [el, ...(i < spines.length - 1 ? FILLERS[i % FILLERS.length] : []).map(filler)]),
+      h("span", { class: "bookend", "aria-hidden": "true" })
     );
 
-    const emptyDesk = () => h("p", { class: "hand desk-empty", "aria-hidden": "true" }, "Nothing out yet.");
+    const leftPage = (b, i) =>
+      h(
+        "div",
+        { class: `pg pg-l ${cloth(b)}` },
+        h("p", { class: "pg-band" }, h("span", { class: "pg-vol" }, `Vol. ${two(i + 1)}`), brush(b.spine)),
+        drawing(b.id, "pg-art"),
+        h("p", { class: "pg-folio", "aria-hidden": "true" }, `${two(i + 1)} / ${two(books.length)}`)
+      );
 
-    function tome(b, i) {
-      const titleId = `tomeTitle-${i}`;
-      const no = `Vol. ${String(i + 1).padStart(2, "0")}`;
-      return h(
-        "article",
-        { class: `tome ink-${b.color || "accent"}`, "aria-labelledby": titleId },
-        h(
-          "div",
-          { class: "tome-cover", "aria-hidden": "true" },
-          h("div", { class: "tome-front" }, h("p", { class: "tome-no" }, no), h("p", { class: "tome-name" }, brush(b.spine))),
-          h("div", { class: "tome-inside" }, h("p", { class: "tome-name" }, brush(b.spine)), h("p", { class: "tome-no" }, no))
-        ),
-        h(
-          "div",
-          { class: "tome-page" },
-          h("h3", { class: "hand", id: titleId }, b.heading || b.spine),
-          has(b.text) ? h("p", {}, b.text) : null,
-          (b.list || []).length
-            ? h(
-                "ol",
-                { class: "tome-list" },
-                b.list.map((t) =>
-                  h(
-                    "li",
-                    {},
-                    typeof t === "string"
-                      ? h("div", {}, t)
-                      : h("div", {}, h("b", {}, t.title), has(t.note) ? h("p", {}, t.note) : null)
-                  )
+    const step = (i, dir) =>
+      books[i]
+        ? h(
+            "button",
+            { class: `pg-step ${dir}`, type: "button", onclick: () => turnTo(i, true) },
+            h("span", { class: "vh" }, dir === "prev" ? "Previous book: " : "Next book: "),
+            books[i].spine
+          )
+        : h("span");
+
+    const rightPage = (b, i) =>
+      h(
+        "div",
+        { class: "pg pg-r" },
+        h("h3", { class: "hand", id: `bookTitle-${i}` }, b.heading || b.spine),
+        has(b.text) ? h("p", { class: "pg-text" }, b.text) : null,
+        (b.list || []).length
+          ? h(
+              "ol",
+              { class: "pg-list" },
+              b.list.map((t) =>
+                h(
+                  "li",
+                  {},
+                  typeof t === "string"
+                    ? h("div", {}, t)
+                    : h("div", {}, h("b", {}, t.title), has(t.note) ? h("p", {}, t.note) : null)
                 )
               )
-            : null,
-          b.link && has(b.link.url)
-            ? h("p", {}, h("a", { class: "tome-link", ...linkAttrs(b.link.url) }, b.link.label, newTabNote(b.link.url)))
-            : null,
-          h("button", { class: "tome-back", type: "button", onclick: () => { pick(i); spines[i].focus(); } }, "Put it back")
-        )
+            )
+          : null,
+        b.link && has(b.link.url)
+          ? h("p", {}, h("a", { class: "pg-link", ...linkAttrs(b.link.url) }, b.link.label, newTabNote(b.link.url)))
+          : null,
+        h("nav", { class: "pg-nav", "aria-label": "More books" }, step(i - 1, "prev"), step(i + 1, "next"))
       );
+
+    const spread = (i) =>
+      h("article", { class: "spread", "aria-labelledby": `bookTitle-${i}` }, leftPage(books[i], i), rightPage(books[i], i));
+
+    // A copy of a page for the animation: no ids outside its drawing, nothing to focus.
+    const copy = (page) => {
+      const c = page.cloneNode(true);
+      c.querySelectorAll("[id]").forEach((el) => !el.closest("svg") && el.removeAttribute("id"));
+      c.inert = true;
+      return c;
+    };
+
+    let current = -1;
+    let settle = null; // finishes a turn in progress at once
+
+    // The leaf: one sheet with a page on each side, turned about the spine.
+    function turn(next, from, forward, onFace) {
+      const [newL, newR] = next.children;
+      const landing = forward ? newL : newR; // where the leaf comes to rest
+      const placeholder = from ? copy(forward ? from.children[0] : from.children[1]) : h("div", { class: "pg pg-void" });
+      const leaf = h(
+        "div",
+        { class: `leaf ${forward ? "fwd" : "back"}`, "aria-hidden": "true" },
+        h("div", { class: "leaf-face" }, onFace),
+        h("div", { class: "leaf-face leaf-reverse" }, copy(landing))
+      );
+      leaf.inert = true;
+      next.replaceChild(placeholder, landing);
+      next.append(leaf);
+      const done = () => {
+        if (settle !== done) return;
+        settle = null;
+        if (placeholder.parentNode === next) next.replaceChild(landing, placeholder);
+        leaf.remove();
+        next.classList.remove("shut", "opening");
+      };
+      settle = done;
+      leaf.addEventListener("animationend", done, { once: true });
+      return leaf;
     }
 
-    function pick(i) {
-      current = current === i ? null : i;
-      spines.forEach((el, n) => el.setAttribute("aria-expanded", String(n === current)));
-      desk.replaceChildren(current === null ? emptyDesk() : tome(books[current], current));
+    function turnTo(i, fromPage) {
+      if (i === current || !books[i]) return;
+      if (settle) settle();
+      const old = desk.querySelector(".spread");
+      const next = spread(i);
+      const forward = i > current;
+      current = i;
+      spines.forEach((el, n) => el.setAttribute("aria-current", n === i ? "true" : "false"));
+
+      const still = stillPlease.matches || desk.clientWidth < 640;
+      if (!old || still) {
+        desk.replaceChildren(next);
+        if (old && !stillPlease.matches) next.classList.add("cut");
+      } else {
+        const lifted = copy(forward ? old.children[1] : old.children[0]);
+        const leaf = turn(next, old, forward, lifted);
+        desk.replaceChildren(next);
+        leaf.classList.add("run");
+      }
+      // the page that held the button is gone, so keep the reader's place on the shelf
+      if (fromPage) spines[i].focus({ preventScroll: true });
     }
-    desk.append(emptyDesk());
+
+    // Start with the first book shut in the middle of the desk, and open it once it is in view.
+    current = 0;
+    spines[0].setAttribute("aria-current", "true");
+    spines.slice(1).forEach((el) => el.setAttribute("aria-current", "false"));
+    const first = spread(0);
+    const canOpen = !stillPlease.matches && "IntersectionObserver" in window && desk.clientWidth >= 640;
+    if (canOpen) {
+      const b = books[0];
+      const cover = h(
+        "div",
+        { class: `pg cover ${cloth(b)}` },
+        h("p", { class: "cover-vol" }, `Vol. ${two(1)}`),
+        h("p", { class: "cover-title" }, brush(b.spine)),
+        h("span", { class: "book-mark" })
+      );
+      const leaf = turn(first, null, true, cover);
+      first.classList.add("shut");
+      desk.append(first);
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          if (!leaf.isConnected) return;
+          first.classList.add("opening");
+          leaf.classList.add("run");
+        },
+        { threshold: 0.45 }
+      );
+      io.observe(desk);
+    } else {
+      desk.append(first);
+    }
   }
 
   /* ---------- Footer ---------- */
@@ -565,6 +667,62 @@
       ...visibleLinks(SITE.links).map((l) => h("a", linkAttrs(l.url), l.label, newTabNote(l.url)))
     );
     $("#footerName").append(brush(SITE.name));
+  }
+
+  /* ---------- A drawing under each margin title ---------- */
+  function drawChapters() {
+    document.querySelectorAll("main > section.page").forEach((section) => {
+      const chapter = section.querySelector(".side > .chapter");
+      const art = chapter && drawing(section.id, "chapter-art");
+      if (art) chapter.append(art);
+    });
+  }
+
+  /* ---------- Projects: the drawing follows the pointer over the index ---------- */
+  function initPeek() {
+    const rows = [...document.querySelectorAll(".row[data-art]")];
+    if (!rows.length || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    const peek = h("div", { class: "peek", "aria-hidden": "true" });
+    document.body.append(peek);
+    const byId = new Map((SITE.projects || []).map((p) => [p.id, p]));
+    const cache = new Map();
+    const fill = (id) => {
+      if (!cache.has(id)) {
+        const p = byId.get(id);
+        const el = has(p && p.image) ? h("img", { src: p.image, alt: "", decoding: "async" }) : drawing(id, "peek-art");
+        cache.set(id, el);
+      }
+      peek.replaceChildren(cache.get(id));
+    };
+    let x = 0, y = 0, tx = 0, ty = 0, raf = 0;
+    const tick = () => {
+      const lag = stillPlease.matches ? 1 : 0.2;
+      const dx = (tx - x) * lag;
+      x += dx;
+      y += (ty - y) * lag;
+      const tilt = Math.max(-7, Math.min(7, dx * 0.5));
+      peek.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(tilt - 2).toFixed(2)}deg)`;
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.3 ? requestAnimationFrame(tick) : 0;
+    };
+    const aim = (e) => {
+      tx = e.clientX + 28;
+      ty = e.clientY - peek.offsetHeight * 0.6;
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+    rows.forEach((row) => {
+      row.addEventListener("pointerenter", (e) => {
+        fill(row.dataset.art);
+        if (!peek.classList.contains("on")) {
+          x = tx = e.clientX + 28;
+          y = ty = e.clientY - peek.offsetHeight * 0.6;
+          tick();
+        }
+        peek.classList.add("on");
+      });
+      row.addEventListener("pointermove", aim);
+      row.addEventListener("pointerleave", () => peek.classList.remove("on"));
+    });
+    addEventListener("scroll", () => peek.classList.remove("on"), { passive: true });
   }
 
   /* ---------- Section titles are stamped down as you reach them ----------
@@ -658,9 +816,11 @@
   renderSkills();
   renderOffClock();
   renderFooter();
+  drawChapters();
   initReader();
   initSectionMarker();
   initReveals();
   initProgress();
   initCoverDepth();
+  initPeek();
 })();

@@ -379,6 +379,46 @@ button {
   letter-spacing: 0.01em;
 }
 
+/* Vector ink drawings from js/art.js. They draw in the palette's own inks, so they follow it. */
+.art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+.art .k {
+  fill: var(--line);
+}
+.art .w {
+  fill: var(--panel);
+}
+.art .r {
+  fill: var(--accent);
+}
+.art .n {
+  fill: none;
+}
+.art .o,
+.art .o3,
+.art .o2 {
+  stroke: var(--line);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.art .o3 {
+  stroke-width: 3;
+}
+.art .o2 {
+  stroke-width: 1.6;
+}
+.art .lt {
+  font-family: var(--display);
+}
+.art .jp {
+  font-family: var(--sfx);
+}
+
 /* A strip of label tape */
 .tape {
   display: inline-block;
@@ -870,6 +910,22 @@ button {
   }
 }
 
+/* The drawing under a margin title */
+.chapter-art {
+  width: min(100%, 340px);
+  margin-top: clamp(12px, 2.4vw, 36px);
+}
+/* The shelf only fits the margin on a wide screen; narrower, it sits above the open book. */
+@media (min-width: 900px) and (max-width: 1179px) {
+  #offclock .side {
+    display: block;
+  }
+  #offclock .side > .chapter {
+    position: static;
+    margin-bottom: clamp(36px, 5vw, 64px);
+  }
+}
+
 /* Shared row furniture: a hairline, a date in the margin */
 .when {
   font-size: 0.86rem;
@@ -1172,6 +1228,36 @@ button {
   }
 }
 
+/* The drawing that follows the pointer over the index, printed on light stock in every palette */
+.peek {
+  --line: #000;
+  --panel: var(--sheet);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 20;
+  width: clamp(240px, 22vw, 320px);
+  padding: 10px;
+  border: var(--rule) solid #000;
+  background: var(--sheet);
+  box-shadow: 8px 8px 0 var(--accent);
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.6;
+  transition:
+    opacity 120ms steps(2),
+    scale 120ms steps(3);
+}
+.peek.on {
+  opacity: 1;
+  scale: 1;
+}
+.peek img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
 /* ---------- Skills and education ---------- */
 .kit {
   display: grid;
@@ -1198,7 +1284,7 @@ button {
   margin-bottom: 14px;
 }
 
-/* ---------- Off the clock: a shelf of spines, and the book you pulled out ---------- */
+/* ---------- Off the clock: a shelf of spines, and the book lying open beside it ---------- */
 /* Book colours. Every palette has one spot colour, so a book is the accent, solid ink, bare paper
    or grey: --c is the cloth, --k is what is printed on it. */
 .ink-accent {
@@ -1217,62 +1303,45 @@ button {
   --c: var(--grey);
   --k: #000;
 }
-.bookcase {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: clamp(36px, 5vw, 56px);
-  align-items: start;
+
+/* The case: a screentoned back wall, books standing on a plank */
+.case {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: clamp(10px, 2vw, 24px) 0 34px;
+  padding: 30px 16px 0;
+  border: var(--rule) solid var(--line);
+  border-bottom: 0;
+  background-color: var(--panel);
+  background-image: radial-gradient(circle at center, var(--tone) 0 1.3px, transparent 1.8px);
+  background-size: 9px 9px;
+}
+.case::after {
+  /* the plank */
+  content: "";
+  position: absolute;
+  left: -14px;
+  right: -14px;
+  top: 100%;
+  height: 16px;
+  background: var(--line);
+  box-shadow: 8px 8px 0 var(--accent);
 }
 .rack {
-  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 5px;
-  width: fit-content;
-  max-width: 100%;
-  margin-bottom: 21px;
-  padding: 28px 16px 0 12px;
-}
-.rack::after {
-  /* the board the books stand on */
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: 12px;
-  background: var(--line);
-  box-shadow: 7px 7px 0 var(--accent);
 }
 .book {
   position: relative;
   flex: none;
-  width: 64px;
+  width: 60px;
   height: var(--h, 220px);
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
-  perspective: 700px;
-}
-.book::before {
-  /* the gap it leaves on the shelf while it is out */
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: var(--rule) dashed var(--line);
-  border-bottom: 0;
-  opacity: 0;
-  transition: opacity 160ms steps(2);
-}
-.book-box {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transform-origin: 50% 100%;
-  transition:
-    transform 280ms cubic-bezier(0.2, 0.9, 0.25, 1),
-    opacity 200ms linear;
 }
 .book-spine {
   position: absolute;
@@ -1281,332 +1350,422 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 10px 0 12px;
+  padding: 24px 0 0;
   border: var(--rule) solid var(--line);
-  background: var(--c);
+  background-color: var(--c);
+  /* a round spine: darker at both edges, and the weave of the cloth */
+  background-image:
+    linear-gradient(90deg, rgb(0 0 0 / 0.26), transparent 22%, transparent 70%, rgb(0 0 0 / 0.3)),
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--k) 9%, transparent) 0 1px, transparent 1px 3px);
   color: var(--k);
+  transform-origin: 0 100%;
+  transition: transform 140ms steps(3);
 }
-.book-spine::after,
-.filler::after {
-  /* two bands at the foot of the spine */
+.book-spine::before,
+.book-spine::after {
+  /* head and tail bands, stamped in the print colour */
   content: "";
-  flex: none;
-  align-self: stretch;
-  height: 13px;
-  margin-top: auto;
-  border-block: var(--rule) solid var(--k);
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 7px;
+  border-block: 2px solid var(--k);
+  opacity: 0.85;
+}
+.book-spine::before {
+  top: 7px;
+}
+.book-spine::after {
+  bottom: 9px;
 }
 .book-no {
   flex: none;
   padding: 0 6px 1px;
   background: var(--k);
   color: var(--c);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
   line-height: 1.5;
 }
 .book-title {
   writing-mode: vertical-rl;
   font-family: var(--display);
-  font-size: 2.8rem;
+  font-size: 2.5rem;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
 }
-.book-side {
-  /* the front cover, edge-on until the book is turned */
-  position: absolute;
-  top: 0;
-  left: 100%;
-  width: 124px;
-  height: 100%;
-  border: var(--rule) solid var(--line);
-  border-left: 0;
-  background:
-    repeating-linear-gradient(-45deg, transparent 0 7px, color-mix(in srgb, var(--k) 55%, transparent) 7px 9px),
-    var(--c);
-  transform-origin: 0 50%;
-  transform: rotateY(90deg);
+.book-mark {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin: auto 0 28px;
+  background: var(--k);
+  rotate: 45deg;
 }
-.book:focus-visible {
-  z-index: 3;
+.ink-accent .book-mark,
+.ink-paper .book-mark,
+.ink-grey .book-mark {
+  background: var(--accent);
+}
+.ink-accent .book-mark {
+  background: var(--k);
 }
 @media (hover: hover) {
-  .book:hover {
-    z-index: 3;
-  }
-  .book:hover .book-box {
-    transform: translateY(-18px) rotateY(-36deg);
+  .book:hover .book-spine {
+    transform: translateY(-12px) rotate(-3deg);
   }
 }
-.book:focus-visible .book-box {
-  transform: translateY(-18px) rotateY(-36deg);
+.book:focus-visible {
+  outline: none;
 }
-.book[aria-expanded="true"]::before {
-  opacity: 0.6;
+.book:focus-visible .book-spine {
+  outline: 3px solid var(--line);
+  outline-offset: 4px;
 }
-.book[aria-expanded="true"] .book-box {
-  opacity: 0;
-  transform: translateY(-70%) rotate(-7deg);
+/* the book that is open stands proud of the row */
+.book[aria-current="true"] .book-spine {
+  transform: translateY(-26px);
+}
+.book[aria-current="true"] .book-no {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.ink-accent.book[aria-current="true"] .book-no {
+  background: var(--k);
+  color: var(--c);
 }
 .filler {
   flex: none;
-  display: flex;
-  flex-direction: column;
-  width: 28px;
-  height: 178px;
-  padding-bottom: 12px;
+  width: 26px;
+  height: 168px;
   border: var(--rule) solid var(--line);
-  background: var(--panel);
-}
-.filler::after {
-  border-color: var(--line);
+  background-color: var(--panel);
+  background-image: linear-gradient(90deg, rgb(0 0 0 / 0.16), transparent 30%, transparent 64%, rgb(0 0 0 / 0.2));
 }
 .filler.thin {
-  width: 19px;
-  height: 206px;
-  background: var(--line);
-}
-.filler.thin::after {
-  border-color: var(--ground);
+  width: 16px;
+  height: 196px;
+  background-color: var(--line);
 }
 .filler.short {
-  width: 36px;
-  height: 152px;
+  width: 34px;
+  height: 140px;
+  background-color: var(--grey);
 }
 .filler.tall {
-  height: 236px;
+  height: 226px;
 }
-.filler.lean {
-  margin-left: 31px;
-  transform-origin: 100% 100%;
-  transform: rotate(-10deg);
-}
-
-/* Beside the open book, the shelf stays in view while you read, so the next book is one click away. */
-@media (min-width: 900px) {
-  .rack {
-    position: sticky;
-    top: calc(var(--bar) + 28px);
-  }
-  .filler.wide {
-    display: none;
-  }
-  .desk > .desk-empty {
-    min-height: 300px;
-  }
+.bookend {
+  flex: none;
+  width: 30px;
+  height: 112px;
+  margin-left: 4px;
+  background: var(--line);
+  clip-path: polygon(0 0, 42% 0, 42% 86%, 100% 86%, 100% 100%, 0 100%);
 }
 
+/* The open book: two pages, the drawing on the left and the reading on the right */
 .desk {
   container-type: inline-size;
   min-width: 0;
+  filter: drop-shadow(10px 10px 0 var(--accent));
 }
-.desk-empty {
-  display: grid;
-  place-items: center;
-  max-width: 900px;
-  min-height: 120px;
-  padding: 20px;
-  border: var(--rule) dashed var(--line);
-  color: var(--soft);
-  font-size: 2.4rem;
-  text-align: center;
-}
-.tome {
-  --shift: -25%;
+.spread {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  max-width: 900px;
-  min-height: 360px;
-  margin-right: 9px;
-  perspective: 1700px;
-  animation: tome-in 1200ms cubic-bezier(0.3, 0.75, 0.25, 1) both;
+  perspective: 2400px;
 }
-.tome-page {
-  grid-column: 2;
+.pg {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 14px;
-  padding: clamp(18px, 5cqi, 30px);
+  min-height: 560px;
+  padding: clamp(20px, 3.4cqi, 36px);
   border: var(--rule) solid var(--line);
-  background: var(--panel);
-  box-shadow: 9px 9px 0 var(--accent);
+  background-color: var(--panel);
+  color: var(--line);
 }
-.tome-page > .hand {
-  font-size: 2.6rem;
+.pg-l {
+  border-right-width: 0;
+  background-image: linear-gradient(to left, rgb(0 0 0 / 0.16), transparent 36px);
 }
-.tome-list {
-  align-self: stretch;
+.pg-r {
+  background-image: linear-gradient(to right, rgb(0 0 0 / 0.16), transparent 36px);
+}
+.pg-void {
+  visibility: hidden;
+}
+.pg-band {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: calc(-1 * clamp(20px, 3.4cqi, 36px)) calc(-1 * clamp(20px, 3.4cqi, 36px)) 0;
+  padding: 14px clamp(20px, 3.4cqi, 36px) 10px;
+  border-bottom: var(--rule) solid var(--line);
+  background-color: var(--c);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 9px, color-mix(in srgb, var(--k) 16%, transparent) 9px 11px);
+  color: var(--k);
+}
+.pg-band .brush {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 7cqi, 3.6rem);
+  line-height: 0.86;
+}
+.pg-vol {
+  padding: 1px 8px 2px;
+  background: var(--k);
+  color: var(--c);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.pg-art {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding-top: 8px;
+}
+.pg-art .art {
+  width: min(100%, 300px);
+  max-height: 380px;
+}
+.pg-folio {
+  align-self: flex-start;
+  font-size: 0.82rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+.pg-r > .hand {
+  font-size: clamp(2.2rem, 6cqi, 2.9rem);
+}
+.pg-text {
+  color: var(--soft);
+}
+.pg-list {
   counter-reset: pick;
 }
-.tome-list li {
+.pg-list li {
   counter-increment: pick;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  gap: 10px;
   align-items: baseline;
-  padding: 9px 0;
-  border-top: 2px solid var(--line);
+  padding: 10px 0;
+  border-top: var(--hair) solid var(--line);
   line-height: 1.35;
 }
-.tome-list b {
+.pg-list li:last-child {
+  border-bottom: var(--hair) solid var(--line);
+}
+.pg-list li::before {
+  content: counter(pick, decimal-leading-zero);
+  font-family: var(--display);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.pg-list li:first-child::before {
+  color: var(--accent);
+}
+.pg-list b {
   font-weight: 800;
 }
-.tome-list p {
+.pg-list p {
   margin-top: 2px;
   color: var(--soft);
   font-size: 0.94rem;
 }
-.tome-list li::before {
-  content: counter(pick, decimal-leading-zero);
-  font-family: var(--display);
-  font-size: 1.7rem;
-  line-height: 1;
-}
-.tome-link {
+.pg-link {
   font-weight: 800;
   text-decoration-color: var(--accent);
   text-decoration-thickness: 4px;
   text-underline-offset: 4px;
 }
-.tome-back {
-  min-height: 44px;
+.pg-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: auto;
+  padding-top: 18px;
+}
+.pg-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
   padding: 0 14px;
-  border: 2px solid var(--line);
+  border: var(--hair) solid var(--line);
   background: none;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 90ms steps(2);
+  transition: translate 90ms steps(2);
 }
-.tome-back:hover {
-  transform: rotate(-2deg);
+.pg-step::before,
+.pg-step::after {
+  width: 0.6em;
+  height: 0.7em;
+  background: var(--accent);
+}
+.pg-step.prev::before {
+  content: "";
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+.pg-step.next::after {
+  content: "";
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.pg-step:hover {
   background: var(--line);
-  color: var(--ground);
+  color: var(--panel);
 }
-.tome-cover {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  z-index: 2;
-  width: 50%;
-  pointer-events: none;
-  transform-style: preserve-3d;
-  transform-origin: 0 50%;
-  transform: rotateY(-180deg);
-  animation: cover-open 1200ms cubic-bezier(0.3, 0.75, 0.25, 1) both;
+.pg-step.prev:hover {
+  translate: -3px 0;
 }
-.tome-front,
-.tome-inside {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
+.pg-step.next:hover {
+  translate: 3px 0;
+}
+
+/* The closed cover, before the book is opened */
+.cover {
   justify-content: space-between;
-  gap: 16px;
-  padding: clamp(16px, 5cqi, 28px);
-  border: var(--rule) solid var(--line);
   background-color: var(--c);
+  background-image:
+    linear-gradient(to right, rgb(0 0 0 / 0.22), transparent 30px),
+    repeating-linear-gradient(-45deg, transparent 0 9px, color-mix(in srgb, var(--k) 18%, transparent) 9px 11px);
   color: var(--k);
-  overflow: hidden;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
-.tome-front {
-  box-shadow: 9px 9px 0 var(--cast);
-  background-image: repeating-linear-gradient(-45deg, transparent 0 9px, color-mix(in srgb, var(--k) 18%, transparent) 9px 11px);
-}
-.tome-inside {
-  /* the endpaper: screentone dots */
-  align-items: flex-end;
-  text-align: right;
-  background-image: radial-gradient(color-mix(in srgb, var(--k) 32%, transparent) 1.6px, transparent 2px);
-  background-size: 9px 9px;
-  box-shadow: -9px 9px 0 var(--line);
-  transform: rotateY(180deg);
-}
-.tome-name {
-  font-family: var(--display);
-  font-size: clamp(2.6rem, 17cqi, 5.4rem);
-  line-height: 0.84;
-}
-.tome-no {
+.cover-vol {
   align-self: flex-start;
   padding: 1px 9px 2px;
   background: var(--k);
   color: var(--c);
   font-weight: 800;
 }
-.tome-inside .tome-no {
-  align-self: flex-end;
+.cover-title {
+  font-family: var(--display);
+  font-size: clamp(3rem, 12cqi, 6rem);
+  line-height: 0.84;
 }
-@keyframes tome-in {
-  0% {
-    opacity: 0;
-    transform: translate(var(--shift), -44px) rotate(-5deg);
-  }
-  20% {
-    opacity: 1;
-    transform: translate(var(--shift), 0) rotate(0deg);
-  }
-  38% {
-    opacity: 1;
-    transform: translate(var(--shift), 0) rotate(0deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(0, 0) rotate(0deg);
-  }
+.cover .book-mark {
+  align-self: flex-start;
+  margin: 0;
+  width: 16px;
+  height: 16px;
 }
-@keyframes cover-open {
-  0%,
-  38% {
-    transform: rotateY(0deg);
-  }
-  100% {
+
+/* The leaf that turns: one sheet, a page on each face */
+.leaf {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 2;
+  transform-style: preserve-3d;
+}
+.leaf.fwd {
+  left: 50%;
+  transform-origin: 0 50%;
+}
+.leaf.back {
+  left: 0;
+  transform-origin: 100% 50%;
+}
+.leaf-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.leaf-face > .pg {
+  min-height: 0;
+}
+.leaf-reverse {
+  transform: rotateY(180deg);
+}
+/* a shade sweeps the sheet as it stands up, and is gone by the time it lands */
+.leaf-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+.leaf.run.fwd {
+  animation: leaf-fwd 640ms steps(10, jump-none) both;
+}
+.leaf.run.back {
+  animation: leaf-back 640ms steps(10, jump-none) both;
+}
+.leaf.run .leaf-face::after {
+  animation: leaf-shade 640ms steps(10, jump-none) both;
+}
+.spread.shut {
+  translate: -25% 0;
+}
+.spread.opening {
+  animation: unshut 760ms steps(10, jump-none) both;
+}
+.spread.opening .leaf.run {
+  animation-duration: 760ms;
+}
+.spread.opening .leaf.run .leaf-face::after {
+  animation-duration: 760ms;
+}
+.spread.cut {
+  animation: rv-stamp 260ms steps(4, jump-none) backwards;
+}
+@keyframes leaf-fwd {
+  to {
     transform: rotateY(-180deg);
   }
 }
-@keyframes cover-away {
-  0%,
-  38% {
-    opacity: 1;
-    visibility: visible;
-    transform: rotateY(0deg);
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    visibility: hidden;
-    transform: rotateY(-105deg);
+@keyframes leaf-back {
+  to {
+    transform: rotateY(180deg);
   }
 }
-/* No room for a spread: one page, and the cover swings clear of it. */
-@container (max-width: 599px) {
-  .tome {
-    --shift: 0%;
+@keyframes leaf-shade {
+  50% {
+    opacity: 0.28;
+  }
+}
+@keyframes unshut {
+  from {
+    translate: -25% 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+/* No room for a spread: the drawing sits above the reading, and books change with a cut. */
+@container (max-width: 639px) {
+  .spread {
     grid-template-columns: minmax(0, 1fr);
-    min-height: 300px;
   }
-  .tome-page {
-    grid-column: 1;
+  .pg {
+    min-height: 0;
   }
-  .tome-cover {
-    left: 0;
-    width: 100%;
-    opacity: 0;
-    visibility: hidden;
-    transform: rotateY(-105deg);
-    animation-name: cover-away;
+  .pg-l {
+    border-right-width: var(--rule);
+    border-bottom-width: 0;
+    background-image: none;
   }
-  .tome-name {
-    font-size: clamp(2.6rem, 20cqi, 6rem);
+  .pg-r {
+    background-image: none;
+  }
+  .pg-art .art {
+    width: min(100%, 220px);
+  }
+  .pg-folio {
+    display: none;
   }
 }
 
@@ -1759,6 +1918,12 @@ button {
   font-size: 1.2rem;
   font-weight: 600;
   line-height: 1.45;
+}
+.reader-art {
+  padding: clamp(10px, 2vw, 18px);
+  border: var(--rule) solid var(--line);
+  background-color: var(--ground);
+  background-image: var(--grain);
 }
 .reader-img {
   width: 100%;
@@ -2010,16 +2175,8 @@ button {
   }
 }
 @media (max-width: 899px) {
-  .bookcase {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .rack,
-  .tome,
-  .desk-empty {
-    margin-inline: auto;
-  }
-  .tome {
-    translate: -4px 0; /* the hard shadow hangs off the right, so nudge the page back to centre */
+  .chapter-art {
+    width: min(64%, 240px);
   }
   .about,
   .role {
@@ -2102,12 +2259,14 @@ button {
   .filler:not(.thin) {
     display: none;
   }
+  .case {
+    padding-inline: 10px;
+  }
   .rack {
     gap: 4px;
-    padding-inline: 6px;
   }
   .book {
-    width: 56px;
+    width: 54px;
   }
   .sections {
     margin-left: -8px;
@@ -2169,6 +2328,9 @@ button {
   .row-cue,
   .colophon-name,
   .to-top,
+  .chapter-art,
+  .reader-art,
+  .peek,
   .signoff,
   #offclock,
   .skip {
