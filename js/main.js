@@ -92,6 +92,7 @@
     { id: "v10", name: "Vol. 10", ground: "#3b2a78", accent: "#b89a3e" },
   ];
   const systemDark = matchMedia("(prefers-color-scheme: dark)");
+  const stillPlease = matchMedia("(prefers-reduced-motion: reduce)");
   const activePalette = () =>
     PALETTES.find((p) => p.id === root.dataset.theme) || PALETTES[systemDark.matches ? 1 : 0];
 
@@ -106,12 +107,20 @@
       document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", p.ground));
       menu.querySelectorAll("input").forEach((i) => (i.checked = i.value === p.id));
     };
-    const choose = (id) => {
+    const apply = (id) => {
       root.dataset.theme = id;
       try {
         localStorage.setItem("theme", id);
       } catch (e) {}
       paint();
+    };
+    // The new palette floods out from the palette button, like ink dropped on the page.
+    const choose = (id) => {
+      if (!document.startViewTransition || stillPlease.matches) return apply(id);
+      const r = btn.getBoundingClientRect();
+      root.style.setProperty("--vx", `${(r.left + r.width / 2).toFixed(0)}px`);
+      root.style.setProperty("--vy", `${(r.top + r.height / 2).toFixed(0)}px`);
+      document.startViewTransition(() => apply(id));
     };
     menu.append(
       ...PALETTES.map((p) =>
@@ -191,6 +200,30 @@
 
     drawFocusLines();
     fitName();
+    tallyStickers();
+  }
+
+  // The sticker figures tick up to their value as they land, a few frames at a time.
+  function tallyStickers() {
+    if (stillPlease.matches) return;
+    document.querySelectorAll("#heroStats .sticker").forEach((el, i) => {
+      const node = el.querySelector("dd b") || el.querySelector("dd");
+      const m = node.textContent.match(/^(\D*?)(\d[\d,]*)(.*)$/);
+      if (!m) return;
+      const target = parseInt(m[2].replace(/,/g, ""), 10);
+      if (!(target > 1)) return;
+      const print = (n) => m[1] + (m[2].includes(",") ? n.toLocaleString("en-US") : n) + m[3];
+      const frames = 10;
+      let f = 0;
+      node.textContent = print(0);
+      setTimeout(() => {
+        const id = setInterval(() => {
+          f += 1;
+          node.textContent = print(Math.round(target * (1 - Math.pow(1 - f / frames, 3))));
+          if (f >= frames) clearInterval(id);
+        }, 55);
+      }, 560 + i * 80);
+    });
   }
 
   // Manga focus lines: thin ink wedges running in from the page edge toward the name.
@@ -221,7 +254,6 @@
   // Size the name to the width of the cover. The ratios are measured from the real font, so a
   // different name in content.js still fills the line.
   function fitName() {
-    const el = $("#heroName");
     if (!document.fonts || !document.fonts.load) return;
     const shown = (text) =>
       alternates(text)
@@ -236,8 +268,9 @@
         const line = ctx.measureText(full).width / 100;
         const word = Math.max(...full.split(/\s+/).map((w) => ctx.measureText(w).width)) / 100;
         if (!(line > 0)) return;
-        el.style.setProperty("--fit-line", (line * 1.05).toFixed(3));
-        el.style.setProperty("--fit-word", (word * 1.08).toFixed(3));
+        // set on the page, not the heading: the name is lettered again across the foot of the page
+        root.style.setProperty("--fit-line", (line * 1.05).toFixed(3));
+        root.style.setProperty("--fit-word", (word * 1.08).toFixed(3));
       },
       () => {}
     );
@@ -348,7 +381,11 @@
           : null,
         techTags(p.tags),
         (p.process || []).length
-          ? h("ol", { class: "steps" }, p.process.map((s) => h("li", {}, h("h3", {}, s.title), h("p", {}, s.text))))
+          ? h(
+              "ol",
+              { class: "steps" },
+              p.process.map((s, n) => h("li", { style: `--n:${n}` }, h("h3", {}, s.title), h("p", {}, s.text)))
+            )
           : null,
         links.length
           ? h(
@@ -541,6 +578,110 @@
     $("#footerLinks").append(
       ...visibleLinks(SITE.links).map((l) => h("a", linkAttrs(l.url), l.label, newTabNote(l.url)))
     );
+    $("#footerName").append(brush(SITE.name));
+  }
+
+  /* ---------- Tape ticker under the cover: the skills, lettered ---------- */
+  function renderTicker() {
+    const el = $("#ticker");
+    const items = Object.values(SITE.skills || {}).flat().filter(has);
+    if (!items.length) return el.remove();
+    // two identical runs, each long enough to span a wide screen, so the loop has no seam
+    const run = () => h("div", { class: "ticker-run" }, [...items, ...items].map((t) => h("span", {}, brush(t))));
+    el.append(h("div", { class: "ticker-tape" }, run(), run()));
+  }
+
+  /* ---------- Chapter marks: "Ch. 02" and a rule, above every section title ---------- */
+  function markChapters() {
+    const chapters = [...document.querySelectorAll("main .chapter")];
+    const two = (n) => String(n).padStart(2, "0");
+    chapters.forEach((c, i) =>
+      c.prepend(
+        h(
+          "p",
+          { class: "chapter-mark", "aria-hidden": "true" },
+          h("span", { class: "tape" }, `Ch. ${two(i + 1)}`),
+          h("span", { class: "chapter-rule" }),
+          h("span", { class: "chapter-of" }, `${two(i + 1)} / ${two(chapters.length)}`)
+        )
+      )
+    );
+  }
+
+  /* ---------- Reveals: each piece is cut in as it scrolls into view ----------
+     Only armed when motion is welcome and the browser can observe; otherwise nothing is ever hidden. */
+  function initReveals() {
+    if (!("IntersectionObserver" in window) || stillPlease.matches) return;
+    const kinds = {
+      "rv-rule": ".chapter-mark",
+      "rv-stamp": ".chapter h2",
+      "rv-slap": ".note, .school",
+      "rv-up":
+        ".chapter > p:not(.chapter-mark), .about-text p, .panel, .shelf-group > .hand, .group-note, .vol, " +
+        ".kit-group, .rack, .desk, .signoff, .colophon-links, .colophon-small, .to-top",
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        let n = 0;
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.style.setProperty("--d", Math.min(n++, 6));
+          e.target.classList.add("in");
+          io.unobserve(e.target);
+        }
+      },
+      { rootMargin: "0px 0px -9% 0px" }
+    );
+    for (const [kind, sel] of Object.entries(kinds)) {
+      document.querySelectorAll(sel).forEach((el) => {
+        el.classList.add("rv", kind);
+        io.observe(el);
+      });
+    }
+  }
+
+  /* ---------- Reading progress: red ink along the foot of the top bar ---------- */
+  function initProgress() {
+    const bar = $(".top");
+    let queued = false;
+    const set = () => {
+      queued = false;
+      const max = root.scrollHeight - innerHeight;
+      bar.style.setProperty("--progress", max > 0 ? Math.min(1, scrollY / max).toFixed(4) : "0");
+    };
+    const ask = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(set);
+      }
+    };
+    addEventListener("scroll", ask, { passive: true });
+    addEventListener("resize", ask);
+    set();
+  }
+
+  /* ---------- Cover depth: the focus lines, name and stickers lean with the pointer ---------- */
+  function initCoverDepth() {
+    const hero = $(".hero");
+    if (!hero || stillPlease.matches || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    let tx = 0, ty = 0, x = 0, y = 0, raf = 0;
+    const tick = () => {
+      x += (tx - x) * 0.12;
+      y += (ty - y) * 0.12;
+      hero.style.setProperty("--px", x.toFixed(3));
+      hero.style.setProperty("--py", y.toFixed(3));
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.002 ? requestAnimationFrame(tick) : 0;
+    };
+    const aim = (nx, ny) => {
+      tx = nx;
+      ty = ny;
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+    hero.addEventListener("pointermove", (e) => {
+      const r = hero.getBoundingClientRect();
+      aim(((e.clientX - r.left) / r.width) * 2 - 1, ((e.clientY - r.top) / r.height) * 2 - 1);
+    });
+    hero.addEventListener("pointerleave", () => aim(0, 0));
   }
 
   /* ---------- Section marker in the top bar ---------- */
@@ -570,6 +711,11 @@
   renderSkills();
   renderOffClock();
   renderFooter();
+  renderTicker();
+  markChapters();
   initReader();
   initSectionMarker();
+  initReveals();
+  initProgress();
+  initCoverDepth();
 })();
