@@ -10,6 +10,7 @@
 const SITE = {
   /* ---------- Identity ---------- */
   name: "Jacob Fratti",
+  nameKana: "ジェイコブ・フラッティ", // the name's reading, set small above it on the cover (leave "" to hide)
   title: "Pricing and Analytics",
   location: "Orlando, FL",
   tagline: "I build the automation that replaces manual pricing work, and I measure what it saves.",

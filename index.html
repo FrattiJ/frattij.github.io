@@ -74,61 +74,65 @@
 
     <main id="main">
       <section class="hero" id="top" aria-labelledby="heroName">
-        <svg class="focus" id="focusLines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <path fill="currentColor" />
-        </svg>
-        <div class="wrap hero-grid">
-          <div class="hero-title">
+        <div class="cover-art">
+          <svg class="focus" id="focusLines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path fill="currentColor" />
+          </svg>
+          <div class="halftone" aria-hidden="true"></div>
+          <div class="wrap hero-title">
+            <p class="kana" id="heroKana" lang="ja" aria-hidden="true"></p>
             <h1 id="heroName" translate="no"></h1>
             <p class="cover-lines" id="heroMeta"></p>
           </div>
-          <div class="caption">
+        </div>
+        <div class="cover-foot">
+          <div class="wrap cover-grid">
             <p class="lede" id="heroTagline"></p>
-            <p class="intro" id="heroIntro"></p>
-            <div class="links" id="heroLinks"></div>
+            <div class="cover-copy">
+              <p class="intro" id="heroIntro"></p>
+              <div class="links" id="heroLinks"></div>
+            </div>
+            <dl class="stickers" id="heroStats"></dl>
           </div>
-          <dl class="stickers" id="heroStats"></dl>
         </div>
       </section>
 
-      <!-- A strip of tape across the foot of the cover. Decorative: it repeats the skills listed below. -->
-      <div class="ticker" id="ticker" aria-hidden="true"></div>
-
       <section class="page" id="about" aria-labelledby="h-about">
-        <div class="wrap">
+        <div class="wrap side">
           <header class="chapter">
             <h2 id="h-about">About</h2>
           </header>
-          <div class="about" id="aboutBody"></div>
+          <div class="body about" id="aboutBody"></div>
         </div>
       </section>
 
       <section class="page" id="experience" aria-labelledby="h-experience">
-        <div class="wrap">
+        <div class="wrap side">
           <header class="chapter">
             <h2 id="h-experience">Experience</h2>
           </header>
-          <div class="panels" id="experienceBody"></div>
+          <div class="body roles" id="experienceBody"></div>
         </div>
       </section>
 
       <section class="page night" id="projects" aria-labelledby="h-projects">
+        <div class="halftone" aria-hidden="true"></div>
         <p class="sfx sfx-projects" lang="ja" aria-hidden="true">カタカタ</p>
         <div class="wrap">
           <header class="chapter">
             <h2 id="h-projects">Projects</h2>
-            <p>Open any cover for the full write-up.</p>
+            <p>Open any title for the full write-up.</p>
           </header>
           <div id="projectGroups"></div>
         </div>
       </section>
 
       <section class="page" id="skills" aria-labelledby="h-skills">
-        <div class="wrap">
+        <div class="wrap side">
           <header class="chapter">
             <h2 id="h-skills">Skills and education</h2>
           </header>
-          <div class="split">
+          <div class="body">
             <div class="kit" id="skillsBody"></div>
             <div class="school" id="educationBody"></div>
           </div>

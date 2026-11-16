@@ -161,6 +161,8 @@
     brand.setAttribute("aria-label", `${SITE.name}, back to top`);
 
     lettered($("#heroName"), SITE.name);
+    if (has(SITE.nameKana)) $("#heroKana").textContent = SITE.nameKana;
+    else $("#heroKana").remove();
     $("#heroMeta").append(
       ...[SITE.title, SITE.location]
         .filter(has)
@@ -234,7 +236,7 @@
     let seed = 20260311;
     const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
     const cx = 480;
-    const cy = 300;
+    const cy = 470;
     const count = 210;
     let d = "";
     for (let i = 0; i < count; i++) {
@@ -244,7 +246,7 @@
       const far = 1700;
       // the clear zone is shallower above the name than below it, so lines frame the title all round
       const tipX = cx + Math.cos(a) * 560 * reach;
-      const tipY = cy + Math.sin(a) * (Math.sin(a) < 0 ? 250 : 400) * reach;
+      const tipY = cy + Math.sin(a) * 400 * reach;
       const p = (ang) => `${(cx + Math.cos(ang) * far).toFixed(1)} ${(cy + Math.sin(ang) * far).toFixed(1)}`;
       d += `M${p(a - half)}L${p(a + half)}L${tipX.toFixed(1)} ${tipY.toFixed(1)}Z`;
     }
@@ -278,16 +280,17 @@
 
   /* ---------- About ---------- */
   function renderAbout() {
-    const a = SITE.about || {};
+    const [lead, ...more] = (SITE.about || {}).paragraphs || [];
     const g = SITE.goals || {};
     const hasGoals = (g.paragraphs || []).length || (g.points || []).length;
     $("#aboutBody").append(
       ...[
-        h("div", { class: "about-text" }, (a.paragraphs || []).map((p) => h("p", {}, p))),
+        has(lead) ? h("p", { class: "about-lead" }, lead) : null,
+        more.length ? h("div", { class: "about-more" }, more.map((p) => h("p", {}, p))) : null,
         hasGoals
           ? h(
               "aside",
-              { class: "note", "aria-labelledby": "goalsTitle" },
+              { class: "goals", "aria-labelledby": "goalsTitle" },
               h("h3", { class: "hand", id: "goalsTitle" }, g.heading || "What I am looking for"),
               (g.paragraphs || []).map((p) => h("p", {}, p)),
               (g.points || []).length ? h("ul", {}, g.points.map((p) => h("li", {}, p))) : null
@@ -297,33 +300,29 @@
     );
   }
 
-  /* ---------- Experience: one manga panel per role ---------- */
+  /* ---------- Experience and education: a ledger, one ruled row per entry ---------- */
   const pointList = (points) =>
     (points || []).length ? h("ul", { class: "points" }, points.map((pt) => h("li", {}, pt))) : null;
+
+  const ledgerRow = (x, heading, extra) =>
+    h(
+      "article",
+      { class: "role" },
+      h("p", { class: "when" }, range(x)),
+      h("div", { class: "role-body" }, h(heading, {}, x.role), h("p", { class: "org" }, x.org), pointList(x.points), extra)
+    );
 
   function renderExperience() {
     const items = (SITE.resume || {}).experience || [];
     $("#experienceBody").append(
       ...items.map((x, i) =>
-        h(
-          "article",
-          { class: "panel" },
-          h(
-            "div",
-            { class: "panel-in" },
-            // a click, lettered the way a manga panel would: the newest role is the one-click work
-            i === 0 ? h("p", { class: "sfx sfx-panel", lang: "ja", "aria-hidden": "true" }, "カチッ") : null,
-            has(range(x)) ? h("p", { class: "when" }, range(x)) : null,
-            h("h3", {}, x.role),
-            h("p", { class: "org" }, x.org),
-            pointList(x.points)
-          )
-        )
+        // a click, lettered the way a manga panel would: the newest role is the one-click work
+        ledgerRow(x, "h3", i === 0 ? h("p", { class: "sfx sfx-role", lang: "ja", "aria-hidden": "true" }, "カチッ") : null)
       )
     );
   }
 
-  /* ---------- Projects: a shelf of covers ---------- */
+  /* ---------- Projects: an index of titles ---------- */
   function renderProjects() {
     const wrap = $("#projectGroups");
     for (const group of SITE.projectGroups || []) {
@@ -333,9 +332,13 @@
         h(
           "div",
           { class: "shelf-group" },
-          h("h3", { class: "hand" }, group.title),
-          has(group.note) ? h("p", { class: "group-note" }, group.note) : null,
-          h("div", { class: "shelf" }, items.map(projectCover))
+          h(
+            "div",
+            { class: "shelf-head" },
+            h("h3", { class: "hand" }, group.title),
+            has(group.note) ? h("p", { class: "group-note" }, group.note) : null
+          ),
+          h("div", { class: "rows" }, items.map(projectRow))
         )
       );
     }
@@ -344,23 +347,19 @@
   const techTags = (tags) =>
     (tags || []).length ? h("ul", { class: "tags", translate: "no" }, tags.map((t) => h("li", {}, t))) : null;
 
-  function projectCover(p) {
+  function projectRow(p) {
     const open = lettered(h("button", { type: "button", "aria-haspopup": "dialog", onclick: () => openProject(p) }), p.title);
     return h(
       "article",
-      { class: "vol" },
+      { class: "row" },
+      h("h4", { class: "row-title" }, open),
+      h("div", { class: "row-about" }, h("p", {}, p.summary), techTags(p.tags)),
       h(
-        "div",
-        { class: "vol-cover" },
-        h("p", { class: "vol-meta" }, h("span", {}, p.year), statusStamp(p.status)),
-        h("h4", { class: "vol-title" }, open)
-      ),
-      h(
-        "div",
-        { class: "vol-body" },
-        h("p", {}, p.summary),
-        techTags(p.tags),
-        h("p", { class: "vol-cue", "aria-hidden": "true" }, "Open the write-up")
+        "p",
+        { class: "row-meta" },
+        h("span", {}, p.year),
+        statusStamp(p.status),
+        h("span", { class: "row-cue", "aria-hidden": "true" }, "Open the write-up")
       )
     );
   }
@@ -440,7 +439,7 @@
           "div",
           { class: "kit-group" },
           h("h3", { class: "hand" }, group),
-          h("ul", { class: "tags" }, items.map((s) => h("li", {}, s)))
+          h("ul", { class: "kit-list" }, items.map((s) => h("li", {}, s)))
         )
       )
     );
@@ -449,20 +448,7 @@
     if (education.length) {
       $("#educationBody").append(
         h("h3", { class: "hand" }, "Education"),
-        h(
-          "ol",
-          { class: "edu" },
-          education.map((x) =>
-            h(
-              "li",
-              {},
-              has(range(x)) ? h("p", { class: "when" }, range(x)) : null,
-              h("h4", {}, x.role),
-              h("p", { class: "org" }, x.org),
-              pointList(x.points)
-            )
-          )
-        )
+        h("div", { class: "edu" }, education.map((x) => ledgerRow(x, "h4")))
       );
     } else {
       $("#educationBody").remove();
@@ -581,63 +567,24 @@
     $("#footerName").append(brush(SITE.name));
   }
 
-  /* ---------- Tape ticker under the cover: the skills, lettered ---------- */
-  function renderTicker() {
-    const el = $("#ticker");
-    const items = Object.values(SITE.skills || {}).flat().filter(has);
-    if (!items.length) return el.remove();
-    // two identical runs, each long enough to span a wide screen, so the loop has no seam
-    const run = () => h("div", { class: "ticker-run" }, [...items, ...items].map((t) => h("span", {}, brush(t))));
-    el.append(h("div", { class: "ticker-tape" }, run(), run()));
-  }
-
-  /* ---------- Chapter marks: "Ch. 02" and a rule, above every section title ---------- */
-  function markChapters() {
-    const chapters = [...document.querySelectorAll("main .chapter")];
-    const two = (n) => String(n).padStart(2, "0");
-    chapters.forEach((c, i) =>
-      c.prepend(
-        h(
-          "p",
-          { class: "chapter-mark", "aria-hidden": "true" },
-          h("span", { class: "tape" }, `Ch. ${two(i + 1)}`),
-          h("span", { class: "chapter-rule" }),
-          h("span", { class: "chapter-of" }, `${two(i + 1)} / ${two(chapters.length)}`)
-        )
-      )
-    );
-  }
-
-  /* ---------- Reveals: each piece is cut in as it scrolls into view ----------
+  /* ---------- Section titles are stamped down as you reach them ----------
      Only armed when motion is welcome and the browser can observe; otherwise nothing is ever hidden. */
   function initReveals() {
     if (!("IntersectionObserver" in window) || stillPlease.matches) return;
-    const kinds = {
-      "rv-rule": ".chapter-mark",
-      "rv-stamp": ".chapter h2",
-      "rv-slap": ".note, .school",
-      "rv-up":
-        ".chapter > p:not(.chapter-mark), .about-text p, .panel, .shelf-group > .hand, .group-note, .vol, " +
-        ".kit-group, .rack, .desk, .signoff, .colophon-links, .colophon-small, .to-top",
-    };
     const io = new IntersectionObserver(
       (entries) => {
-        let n = 0;
         for (const e of entries) {
           if (!e.isIntersecting) continue;
-          e.target.style.setProperty("--d", Math.min(n++, 6));
           e.target.classList.add("in");
           io.unobserve(e.target);
         }
       },
       { rootMargin: "0px 0px -9% 0px" }
     );
-    for (const [kind, sel] of Object.entries(kinds)) {
-      document.querySelectorAll(sel).forEach((el) => {
-        el.classList.add("rv", kind);
-        io.observe(el);
-      });
-    }
+    document.querySelectorAll(".chapter h2").forEach((el) => {
+      el.classList.add("rv", "rv-stamp");
+      io.observe(el);
+    });
   }
 
   /* ---------- Reading progress: red ink along the foot of the top bar ---------- */
@@ -711,8 +658,6 @@
   renderSkills();
   renderOffClock();
   renderFooter();
-  renderTicker();
-  markChapters();
   initReader();
   initSectionMarker();
   initReveals();

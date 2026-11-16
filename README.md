@@ -1,6 +1,6 @@
 # Jacob Fratti, personal site
 
-A one-page professional site for the resume: who I am, what I am looking for, experience, projects, skills and education, plus a shelf of books for life outside work. It is drawn as a punk manga cover: brush lettering, manga focus lines, price-gun stickers for the headline numbers, panels for the roles, and a night spread of covers for the projects.
+A one-page professional site for the resume: who I am, what I am looking for, experience, projects, skills and education, plus a shelf of books for life outside work. It is drawn as a punk manga volume set on a strict editorial grid: a cover with brush lettering, focus lines, halftone screentone and price-gun stickers for the headline numbers, then ruled ledgers for the roles and skills, and a night spread that indexes the projects by title.
 
 Plain HTML, CSS, and JavaScript. No framework, no build step, no dependencies, no third-party requests.
 
@@ -17,7 +17,7 @@ Plain HTML, CSS, and JavaScript. No framework, no build step, no dependencies, n
 | Update experience or education  | `resume.experience`, `resume.education`                |
 | Change the books on the shelf   | `offClock.books` (one book per interest)               |
 | Change the links                | `links` (the first link is the main button)            |
-| Change the tape under the cover | `skills` (the tape letters every skill in order)       |
+| Change the katakana on the cover | `nameKana` (leave it `""` to hide it)                 |
 
 Each project has a shareable link, e.g. `https://frattij.github.io/#project/pricing-tool` opens that write-up directly. The button at the right of the top bar opens a palette picker: Ink and Night (black and white with one red accent, following the visitor's system setting until they choose), plus six palettes that take their ground and lettering colour from Dorohedoro covers. The choice is remembered on that device. The Projects section is always the dark side of the current palette.
 
@@ -36,13 +36,15 @@ Colors and fonts are tokens at the top of [`css/style.css`](css/style.css). Each
 
 All four are self-hosted in [`assets/fonts`](assets/fonts), with their license texts beside them. See [`assets/fonts/README.md`](assets/fonts/README.md) for the terms that matter, including how to switch the hand-lettered notes to Muneban once it is licensed for this site.
 
-## Motion
+## Layout and motion
 
-Everything moves the way a cheap anime does: in a few hard frames, never a smooth glide. All of it is in [`css/style.css`](css/style.css) under "Motion", switched on by a few short functions at the bottom of [`js/main.js`](js/main.js).
+Every section sits on the same twelve columns. About, Experience and Skills keep their title in the left margin, where it stays put while the rows scroll past; Projects and the shelf run full width. The first paragraph of `about.paragraphs` is set large as the lead, and the rest sit beside the goals.
 
-- Each section title, panel, cover and note is cut in as it scrolls into view, under a numbered chapter mark.
+Motion is kept to a few moments, all in hard frames to match the print look. They live in [`css/style.css`](css/style.css) under "Opening sequence" and "Motion", and are switched on by short functions at the bottom of [`js/main.js`](js/main.js).
+
 - On the cover, the sticker figures tick up as they land, and the focus lines, name and stickers lean with the pointer. The lines rush outward as the cover scrolls away.
-- A strip of tape lettered with the skills runs across the foot of the cover, a red line along the top bar tracks reading progress, and a new palette floods out from the palette button.
+- Each section title is stamped down as you reach it and its brush swash is pulled across.
+- A project row is covered by a sheet of paper on hover, a red line along the top bar tracks reading progress, and a new palette floods out from the palette button.
 - The name is lettered again across the back cover and rises into place.
 
 Visitors who ask their system for reduced motion get none of it and nothing is ever hidden from them. The scroll-linked extras and the palette flood are skipped by browsers that cannot do them.
