@@ -526,7 +526,7 @@ button {
   transition: transform 90ms steps(2);
 }
 .brand:hover {
-  transform: rotate(-2.5deg) scale(1.05);
+  color: var(--accent);
 }
 .sections {
   display: flex;
@@ -576,7 +576,8 @@ button {
   transition: transform 90ms steps(2);
 }
 .theme:hover {
-  transform: rotate(-12deg);
+  background: var(--line);
+  color: var(--panel);
 }
 .palette-menu {
   position: absolute;
@@ -651,13 +652,12 @@ button {
   overflow: clip;
 }
 .focus {
-  /* a little oversize, so it can lean with the pointer without showing an edge */
+  /* a little oversize, so the rush outward on scroll never shows an edge */
   position: absolute;
   inset: -3%;
   width: 106%;
   height: 106%;
   color: var(--line);
-  translate: calc(var(--px, 0) * -18px) calc(var(--py, 0) * -12px);
 }
 /* Screentone: real halftone, the dots growing toward the dark end. A grey ramp under a lattice of
    soft dots, pushed to pure ink and paper by the contrast filter. */
@@ -710,7 +710,6 @@ button {
   white-space: nowrap;
   text-shadow: 0.032em 0.032em 0 var(--accent);
   text-wrap: nowrap;
-  translate: calc(var(--px, 0) * 7px) calc(var(--py, 0) * 5px);
 }
 .cover-lines {
   display: flex;
@@ -784,21 +783,10 @@ button {
   color: var(--on);
   box-shadow: 5px 5px 0 #000;
   transform: rotate(var(--tilt));
-  translate: calc(var(--px, 0) * var(--z, 9) * 1px) calc(var(--py, 0) * var(--z, 9) * 1px);
-  transition:
-    transform 90ms steps(2),
-    box-shadow 90ms steps(2);
-}
-@media (hover: hover) {
-  .sticker:hover {
-    transform: rotate(0deg) translate(-3px, -3px);
-    box-shadow: 9px 9px 0 #000;
-  }
 }
 .sticker:nth-child(4n + 2) {
   --c: var(--grey);
   --tilt: 2deg;
-  --z: 15;
   margin-top: 14px;
   background-image: radial-gradient(circle at center, rgb(0 0 0 / 0.2) 0 1.6px, transparent 2.2px);
   background-size: 8px 8px;
@@ -807,12 +795,10 @@ button {
   --c: var(--accent);
   --on: var(--on-accent);
   --tilt: 1.3deg;
-  --z: 6;
 }
 .sticker:nth-child(4n + 4) {
   --c: var(--sheet);
   --tilt: -1.6deg;
-  --z: 12;
   margin-top: 8px;
 }
 .sticker dt {
@@ -1110,39 +1096,44 @@ button {
 .group-note {
   color: var(--soft);
 }
-/* One row per project. The title is the button; the whole row is its target, and on hover a sheet
-   of paper is pulled across it. */
+/* One row per project: its drawing, the title (which is the button, with the whole row as its target),
+   what it is, and when. Hovering only inks the title in the spot colour. */
 .row {
   position: relative;
-  isolation: isolate;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: var(--col-gap);
-  row-gap: 14px;
+  row-gap: 16px;
   align-items: start;
-  padding: clamp(20px, 2.4vw, 34px) clamp(0px, 1.2vw, 18px) clamp(22px, 2.6vw, 36px);
+  padding: clamp(22px, 2.6vw, 36px) 0;
   border-top: var(--hair) solid var(--line);
 }
 .rows > .row:last-child {
   border-bottom: var(--hair) solid var(--line);
 }
-.row::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--bone);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  transition: transform 200ms steps(5);
+.row-art {
+  grid-column: span 3;
+  aspect-ratio: 16 / 9;
+  padding: 8px;
+  border: var(--hair) solid var(--line);
+  background-color: var(--panel);
+}
+.row-art .art,
+.row-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .row-title {
-  grid-column: span 6;
+  grid-column: span 5;
   font-family: var(--display);
-  font-size: clamp(2.7rem, 6.2vw, 5.8rem);
+  font-size: clamp(2.5rem, 4.6vw, 4.6rem);
   font-weight: 400;
-  line-height: 0.84;
-  text-shadow: 0.04em 0.04em 0 transparent;
+  line-height: 0.86;
+  transition: color 200ms ease-out;
+}
+.row:not(.has-art) .row-title {
+  grid-column: span 8;
 }
 .row-title button {
   padding: 0;
@@ -1152,67 +1143,36 @@ button {
   cursor: pointer;
 }
 .row-title button::after {
-  /* the whole row is the target */
   content: "";
   position: absolute;
   inset: 0;
   z-index: 1;
 }
 .row-about {
-  grid-column: span 4;
+  grid-column: span 3;
   display: grid;
   gap: 14px;
-  padding-top: 0.5em;
 }
 .row-about > p {
   color: var(--soft);
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   line-height: 1.55;
 }
 .row-meta {
-  grid-column: span 2;
+  grid-column: span 1;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
-  padding-top: 0.5em;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 .row-cue {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55em;
-  margin-top: 6px;
-  font-size: 0.9rem;
-  opacity: 0;
-}
-.row-cue::after {
-  content: "";
-  width: 0.7em;
-  height: 0.7em;
-  background: var(--accent);
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  display: none;
 }
 @media (hover: hover) {
-  .row:hover {
-    --line: #000;
-    --soft: #2b2b2b;
-    color: #000;
-  }
-  .row:hover::before {
-    transform: scaleX(1);
-  }
   .row:hover .row-title {
-    text-shadow: 0.04em 0.04em 0 var(--accent);
-  }
-  .row:hover .row-cue {
-    opacity: 1;
-  }
-}
-@media (hover: none) {
-  .row-cue {
-    opacity: 1;
+    color: var(--accent);
   }
 }
 @supports selector(:has(*)) {
@@ -1221,41 +1181,8 @@ button {
   }
   .row:has(button:focus-visible) {
     outline: 3px solid var(--line);
-    outline-offset: 4px;
+    outline-offset: 6px;
   }
-  .row:has(button:focus-visible) .row-cue {
-    opacity: 1;
-  }
-}
-
-/* The drawing that follows the pointer over the index, printed on light stock in every palette */
-.peek {
-  --line: #000;
-  --panel: var(--sheet);
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 20;
-  width: clamp(240px, 22vw, 320px);
-  padding: 10px;
-  border: var(--rule) solid #000;
-  background: var(--sheet);
-  box-shadow: 8px 8px 0 var(--accent);
-  pointer-events: none;
-  opacity: 0;
-  scale: 0.6;
-  transition:
-    opacity 120ms steps(2),
-    scale 120ms steps(3);
-}
-.peek.on {
-  opacity: 1;
-  scale: 1;
-}
-.peek img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
 }
 
 /* ---------- Skills and education ---------- */
@@ -1414,7 +1341,7 @@ button {
 }
 @media (hover: hover) {
   .book:hover .book-spine {
-    transform: translateY(-12px) rotate(-3deg);
+    transform: translateY(-8px);
   }
 }
 .book:focus-visible {
@@ -1585,51 +1512,6 @@ button {
   text-decoration-thickness: 4px;
   text-underline-offset: 4px;
 }
-.pg-nav {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: auto;
-  padding-top: 18px;
-}
-.pg-step {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 0 14px;
-  border: var(--hair) solid var(--line);
-  background: none;
-  font-size: 0.92rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: translate 90ms steps(2);
-}
-.pg-step::before,
-.pg-step::after {
-  width: 0.6em;
-  height: 0.7em;
-  background: var(--accent);
-}
-.pg-step.prev::before {
-  content: "";
-  clip-path: polygon(100% 0, 0 50%, 100% 100%);
-}
-.pg-step.next::after {
-  content: "";
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-}
-.pg-step:hover {
-  background: var(--line);
-  color: var(--panel);
-}
-.pg-step.prev:hover {
-  translate: -3px 0;
-}
-.pg-step.next:hover {
-  translate: 3px 0;
-}
-
 /* The closed cover, before the book is opened */
 .cover {
   justify-content: space-between;
@@ -1697,52 +1579,8 @@ button {
   opacity: 0;
   pointer-events: none;
 }
-.leaf.run.fwd {
-  animation: leaf-fwd 640ms steps(10, jump-none) both;
-}
-.leaf.run.back {
-  animation: leaf-back 640ms steps(10, jump-none) both;
-}
-.leaf.run .leaf-face::after {
-  animation: leaf-shade 640ms steps(10, jump-none) both;
-}
-.spread.shut {
-  translate: -25% 0;
-}
-.spread.opening {
-  animation: unshut 760ms steps(10, jump-none) both;
-}
-.spread.opening .leaf.run {
-  animation-duration: 760ms;
-}
-.spread.opening .leaf.run .leaf-face::after {
-  animation-duration: 760ms;
-}
 .spread.cut {
   animation: rv-stamp 260ms steps(4, jump-none) backwards;
-}
-@keyframes leaf-fwd {
-  to {
-    transform: rotateY(-180deg);
-  }
-}
-@keyframes leaf-back {
-  to {
-    transform: rotateY(180deg);
-  }
-}
-@keyframes leaf-shade {
-  50% {
-    opacity: 0.28;
-  }
-}
-@keyframes unshut {
-  from {
-    translate: -25% 0;
-  }
-  to {
-    translate: 0 0;
-  }
 }
 
 /* No room for a spread: the drawing sits above the reading, and books change with a cut. */
@@ -2162,16 +2000,21 @@ button {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-top: 6px;
   }
-  .row-title {
-    grid-column: 1 / -1;
+  .row-art {
+    grid-column: span 4;
+  }
+  .row-title,
+  .row:not(.has-art) .row-title {
+    grid-column: span 8;
   }
   .row-about {
-    grid-column: span 9;
-    padding-top: 0;
+    grid-column: 5 / span 6;
+  }
+  .row:not(.has-art) .row-about {
+    grid-column: span 10;
   }
   .row-meta {
-    grid-column: span 3;
-    padding-top: 0;
+    grid-column: span 2;
   }
 }
 @media (max-width: 899px) {
@@ -2218,18 +2061,18 @@ button {
   .kit {
     grid-template-columns: minmax(0, 1fr);
   }
+  .row-art,
+  .row-title,
+  .row:not(.has-art) .row-title,
   .row-about,
+  .row:not(.has-art) .row-about,
   .row-meta {
     grid-column: 1 / -1;
   }
   .row-meta {
     flex-direction: row;
     align-items: center;
-    justify-content: flex-start;
     gap: 14px;
-  }
-  .row-cue {
-    margin: 0 0 0 auto;
   }
   .steps li {
     padding: 62px 16px 16px;
@@ -2330,7 +2173,7 @@ button {
   .to-top,
   .chapter-art,
   .reader-art,
-  .peek,
+  .row-art,
   .signoff,
   #offclock,
   .skip {

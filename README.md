@@ -41,12 +41,12 @@ All four are self-hosted in [`assets/fonts`](assets/fonts), with their license t
 
 Until real artwork is ready, the site carries placeholder illustrations drawn as vector ink in [`js/art.js`](js/art.js): one under each margin title (About, Experience, Skills), one per project, and one per book on the shelf. They are drawn in the palette's own inks, so they change with it, dark mode included. Each is keyed by a section, project or book `id`.
 
-- To use a real image for a project, give it `image` (and `imageAlt`) in `content.js`. It replaces the drawing in the write-up and in the preview that follows the pointer over the project index.
+- To use a real image for a project, give it `image` (and `imageAlt`) in `content.js`. It replaces the drawing in the project's row and in its write-up.
 - To replace any other drawing, change or delete its entry in `art.js`. A missing entry simply leaves the space out.
 
 ## The shelf
 
-The shelf stands in the margin beside an open book. The first book starts shut and swings open the first time it comes into view. Choosing another spine, or the buttons at the foot of the page, turns the page: forward lifts the right-hand page over to the left, back lifts the left-hand page over to the right. The open book's spine stands proud of the row. Where there is no room for a two-page spread, the drawing sits above the reading and books change with a cut.
+The shelf stands in the margin beside an open book. The first book starts shut and swings open the first time it comes into view. Choosing another spine does what you would do with real books: the open one is closed and goes back on the shelf as its spine drops into the row, the chosen spine comes up, and its book is taken down and opened. Choosing again while that is happening goes straight to the new book. Where there is no room for a two-page spread, or the visitor asks for reduced motion, the drawing sits above the reading and books change with a cut.
 
 ## Layout and motion
 
@@ -54,9 +54,12 @@ Every section sits on the same twelve columns. About, Experience and Skills keep
 
 Motion is kept to a few moments, all in hard frames to match the print look. They live in [`css/style.css`](css/style.css) under "Opening sequence" and "Motion", and are switched on by short functions at the bottom of [`js/main.js`](js/main.js).
 
-- On the cover, the sticker figures tick up as they land, and the focus lines, name and stickers lean with the pointer. The lines rush outward as the cover scrolls away.
+- On the cover, the sticker figures tick up as they land, and the focus lines rush outward as the cover scrolls away.
 - Each section title is stamped down as you reach it and its brush swash is pulled across.
-- A project row is covered by a sheet of paper on hover, a red line along the top bar tracks reading progress, and a new palette floods out from the palette button.
+- Changing books on the shelf, described above.
+- A red line along the top bar tracks reading progress, and a new palette floods out from the palette button.
+
+Hover is kept quiet on purpose: a project title turns the spot colour, a spine lifts slightly, buttons press. Nothing follows the pointer.
 - The name is lettered again across the back cover and rises into place.
 
 Visitors who ask their system for reduced motion get none of it and nothing is ever hidden from them. The scroll-linked extras and the palette flood are skipped by browsers that cannot do them.
