@@ -17,6 +17,7 @@ Plain HTML, CSS, and JavaScript. No framework, no build step, no dependencies, n
 | Update experience or education  | `resume.experience`, `resume.education`                |
 | Change the books on the shelf   | `offClock.books` (one book per interest)               |
 | Change the links                | `links` (the first link is the main button)            |
+| Change the tape under the cover | `skills` (the tape letters every skill in order)       |
 
 Each project has a shareable link, e.g. `https://frattij.github.io/#project/pricing-tool` opens that write-up directly. The button at the right of the top bar opens a palette picker: Ink and Night (black and white with one red accent, following the visitor's system setting until they choose), plus six palettes that take their ground and lettering colour from Dorohedoro covers. The choice is remembered on that device. The Projects section is always the dark side of the current palette.
 
@@ -34,6 +35,17 @@ Colors and fonts are tokens at the top of [`css/style.css`](css/style.css). Each
 | Japanese sound effects | Reggae One      | SIL Open Font License 1.1                            |
 
 All four are self-hosted in [`assets/fonts`](assets/fonts), with their license texts beside them. See [`assets/fonts/README.md`](assets/fonts/README.md) for the terms that matter, including how to switch the hand-lettered notes to Muneban once it is licensed for this site.
+
+## Motion
+
+Everything moves the way a cheap anime does: in a few hard frames, never a smooth glide. All of it is in [`css/style.css`](css/style.css) under "Motion", switched on by a few short functions at the bottom of [`js/main.js`](js/main.js).
+
+- Each section title, panel, cover and note is cut in as it scrolls into view, under a numbered chapter mark.
+- On the cover, the sticker figures tick up as they land, and the focus lines, name and stickers lean with the pointer. The lines rush outward as the cover scrolls away.
+- A strip of tape lettered with the skills runs across the foot of the cover, a red line along the top bar tracks reading progress, and a new palette floods out from the palette button.
+- The name is lettered again across the back cover and rises into place.
+
+Visitors who ask their system for reduced motion get none of it and nothing is ever hidden from them. The scroll-linked extras and the palette flood are skipped by browsers that cannot do them.
 
 ## Previewing locally
 
