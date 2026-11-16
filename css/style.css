@@ -692,6 +692,17 @@ button {
   position: relative;
   container-type: inline-size;
 }
+/* The cover drawing: big, bleeding off the right edge, with the name lettered over it */
+.cover-art-piece {
+  position: absolute;
+  right: max(-3vw, -48px);
+  bottom: -2%;
+  width: clamp(260px, 31vw, 500px);
+  pointer-events: none;
+}
+.cover-art-piece .art {
+  overflow: visible;
+}
 /* the name's reading in katakana, set small above it the way a cover carries one */
 .kana {
   margin: 0 0 clamp(4px, 1vw, 14px) 0.2em;
@@ -1841,6 +1852,9 @@ button {
   .js .kana {
     animation: rv-fade 200ms steps(2, jump-none) 340ms both;
   }
+  .js .cover-art-piece {
+    animation: kick 300ms steps(4, jump-none) 300ms both;
+  }
   .js .cover-lines .tape,
   .js .sticker {
     animation: slap 200ms steps(2, jump-none) both;
@@ -1971,6 +1985,18 @@ button {
     transform: scale(1.12) rotate(-1.5deg);
   }
 }
+@keyframes kick {
+  0% {
+    opacity: 0;
+    translate: 60px -30px;
+    rotate: 10deg;
+  }
+  60% {
+    opacity: 1;
+    translate: 0 0;
+    rotate: -3deg;
+  }
+}
 @keyframes slap {
   from {
     opacity: 0;
@@ -2046,6 +2072,11 @@ button {
   .cover-art {
     flex: none;
     padding-bottom: 40px;
+  }
+  .cover-art-piece {
+    right: -8vw;
+    bottom: -6%;
+    width: 40vw;
   }
   .kana {
     margin-bottom: 18px;
@@ -2164,6 +2195,7 @@ button {
   .top,
   .focus,
   .halftone,
+  .cover-art-piece,
   .sfx,
   .kana,
   .night::before,

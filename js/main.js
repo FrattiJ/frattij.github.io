@@ -210,6 +210,9 @@
       )
     );
 
+    // the cover drawing stands behind the name, at the right, aimed at the stickers
+    const gun = drawing("cover", "cover-art-piece");
+    if (gun) $(".cover-art").insertBefore(gun, $(".cover-art .hero-title"));
     drawFocusLines();
     fitName();
     tallyStickers();

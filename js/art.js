@@ -84,8 +84,8 @@
   const ART = {
     /* ---------- Margin art for the chapters ---------- */
 
-    // A price gun, firing stickers
-    about: () =>
+    // The cover: a price gun, the stickers on the cover are what it printed
+    cover: () =>
       svg("0 0 360 330", (u) =>
         // hard shadows
         `<g class="k" transform="translate(8 8)"><circle cx="232" cy="92" r="58"/>` +
@@ -119,8 +119,8 @@
         `<path class="o n" d="M152 256l-14 8M158 272l-16 4M166 288l-12 10"/>`
       ),
 
-    // A crate of bottles, with a price tag on a string
-    experience: () =>
+    // About: a crate of bottles, with a price tag on a string
+    about: () =>
       svg("0 0 360 330", (u) =>
         `<circle class="r" cx="212" cy="112" r="96"/>` +
         // rim and the dark inside of the crate
@@ -148,6 +148,33 @@
         barcode(24, 246, 24, 20, 9) +
         `</g>`
       ),
+
+    // Experience: the field years, a folded map with a store route on it
+    experience: () =>
+      svg("0 0 360 330", (u) => {
+        const pin = (x, y, cls, r = 1) =>
+          `<path class="k" transform="translate(5 5)" d="M${x} ${y}C${x - 22 * r} ${y - 26 * r} ${x - 18 * r} ${y - 54 * r} ${x} ${y - 54 * r}C${x + 18 * r} ${y - 54 * r} ${x + 22 * r} ${y - 26 * r} ${x} ${y}Z"/>` +
+          `<path class="${cls} o" d="M${x} ${y}C${x - 22 * r} ${y - 26 * r} ${x - 18 * r} ${y - 54 * r} ${x} ${y - 54 * r}C${x + 18 * r} ${y - 54 * r} ${x + 22 * r} ${y - 26 * r} ${x} ${y}Z"/>` +
+          `<circle class="w o3" cx="${x}" cy="${y - 36 * r}" r="${7 * r}"/>`;
+        return (
+          `<path class="k" transform="translate(9 9)" d="M24 74L122 52L214 78L330 54L336 272L218 296L126 270L28 292Z"/>` +
+          `<path class="o" fill="${u.F}" d="M24 74L122 52L214 78L330 54L336 272L218 296L126 270L28 292Z"/>` +
+          `<path class="o" fill="${u.T}" d="M122 52L214 78L218 296L126 270Z" style="opacity:.55"/>` +
+          // roads: an ink casing with a paper road inside it
+          `<g class="n" style="stroke-linecap:round;stroke-linejoin:round">` +
+          `<path style="stroke:var(--line);stroke-width:18" d="M28 160Q150 132 334 172M150 58Q176 170 138 276M246 72L262 290M28 236Q110 214 200 236"/>` +
+          `<path style="stroke:var(--panel);stroke-width:9" d="M28 160Q150 132 334 172M150 58Q176 170 138 276M246 72L262 290M28 236Q110 214 200 236"/>` +
+          `</g>` +
+          `<path class="o n" d="M122 52L126 270M214 78L218 296" style="opacity:.6"/>` +
+          // the route between stores
+          `<path class="n" style="stroke:var(--accent);stroke-width:6;stroke-dasharray:10 8;stroke-linecap:round" d="M76 146Q96 196 150 196Q210 196 214 126Q218 96 262 112Q300 128 286 214Q276 252 236 238"/>` +
+          pin(76, 146, "k") + pin(150, 196, "k") + pin(262, 112, "w") + pin(236, 238, "r", 1.35) +
+          // a tally of stores visited, top left
+          `<g transform="rotate(-6 70 42)"><rect class="k" x="26" y="18" width="98" height="40" transform="translate(5 5)"/>` +
+          `<rect class="w o" x="26" y="18" width="98" height="40"/>` +
+          `<path class="o3 n" d="M38 28v20M46 28v20M54 28v20M62 28v20M34 44l34-12M80 28v20M88 28v20M96 28v20"/></g>`
+        );
+      }),
 
     // A ledger sheet with a chart, a brush tick and a pencil
     skills: () =>

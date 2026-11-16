@@ -39,7 +39,7 @@ All four are self-hosted in [`assets/fonts`](assets/fonts), with their license t
 
 ## Drawings
 
-Until real artwork is ready, the site carries placeholder illustrations drawn as vector ink in [`js/art.js`](js/art.js): one under each margin title (About, Experience, Skills), one per project, and one per book on the shelf. They are drawn in the palette's own inks, so they change with it, dark mode included. Each is keyed by a section, project or book `id`.
+Until real artwork is ready, the site carries placeholder illustrations drawn as vector ink in [`js/art.js`](js/art.js): a price gun on the cover, one under each margin title (a crate for About, a route map for Experience, a ledger for Skills), one per project, and one per book on the shelf. They are drawn in the palette's own inks, so they change with it, dark mode included. Each is keyed by a section, project or book `id`.
 
 - To use a real image for a project, give it `image` (and `imageAlt`) in `content.js`. It replaces the drawing in the project's row and in its write-up.
 - To replace any other drawing, change or delete its entry in `art.js`. A missing entry simply leaves the space out.
