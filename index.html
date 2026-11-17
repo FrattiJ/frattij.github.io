@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Jacob Fratti | Pricing and Analytics</title>
-    <meta name="description" content="Jacob Fratti: pricing and analytics. Experience, projects, skills and education." />
+    <meta name="description" content="Jacob Fratti builds the automation that replaces manual pricing work. Projects told as manga chapters, six years of beverage distribution, and what comes next." />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Jacob Fratti | Pricing and Analytics" />
     <meta property="og:description" content="I build the automation that replaces manual pricing work, and I measure what it saves." />
@@ -12,22 +12,22 @@
     <meta property="og:image" content="https://frattij.github.io/assets/share.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Jacob Fratti in brush lettering over manga focus lines, with four price stickers: 6 yrs, about 150 accounts, 6 hrs marked down to 1 min, and 1,800 SKUs." />
+    <meta property="og:image:alt" content="Jacob Fratti lettered as a manga title in black and yellow over focus lines, with the katakana reading of the name set vertically." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#e8e8e3" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="preload" href="assets/fonts/Dracutaz.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/DelaGothicOne.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="assets/fonts/MPLUS1-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="css/style.css" />
     <script>
-      // Runs before first paint: apply the saved theme and arm the opening sequence.
+      // Before first paint: apply a saved day or night page, and arm the opening sequence.
       (function () {
         var root = document.documentElement;
         try {
-          var t = localStorage.getItem("theme");
-          if (t && /^[a-z0-9]+$/.test(t)) root.dataset.theme = t;
+          var t = localStorage.getItem("page");
+          if (t === "day" || t === "night") root.dataset.theme = t;
         } catch (e) {}
         root.classList.add("js");
       })();
@@ -36,149 +36,151 @@
   <body>
     <a class="skip" href="#main">Skip to content</a>
 
-    <!-- Shared ink filters: rough brush edges and torn paper. Decorative only. -->
-    <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
-      <defs>
-        <filter id="rough" x="-6%" y="-30%" width="112%" height="160%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.028 0.11" numOctaves="2" seed="11" result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="9" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-        <filter id="tear" x="-2%" y="-80%" width="104%" height="260%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.018 0.03" numOctaves="3" seed="4" result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="26" xChannelSelector="G" yChannelSelector="R" />
-        </filter>
-      </defs>
-    </svg>
-
-    <header class="top">
-      <a class="brand" href="#top" id="brand" translate="no"></a>
-      <nav class="sections" aria-label="Sections">
-        <a href="#about">About</a>
-        <a href="#experience">Experience</a>
-        <a href="#projects">Projects</a>
-        <a href="#skills">Skills</a>
-        <a href="#offclock">Shelf</a>
-      </nav>
-      <button class="theme" id="paletteToggle" type="button" aria-label="Colour palette" aria-expanded="false" aria-controls="paletteMenu" title="Colour palette">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-          <rect x="3" y="3" width="8" height="8" fill="currentColor" />
-          <rect x="13" y="3" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" />
-          <rect x="3" y="13" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" />
-          <rect x="13" y="13" width="8" height="8" fill="currentColor" />
-        </svg>
-      </button>
-      <fieldset class="palette-menu" id="paletteMenu" hidden>
-        <legend class="vh">Colour palette</legend>
-      </fieldset>
+    <header class="bar" id="bar">
+      <div class="bar-in">
+        <a class="bar-brand" href="#top" translate="no">Jacob Fratti</a>
+        <nav class="bar-nav" aria-label="Sections">
+          <a href="#work">Work</a>
+          <a href="#story">Story</a>
+          <a href="#profile">Profile</a>
+          <a href="#extras">Extras</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <button class="icon-btn" id="themeToggle" type="button" aria-pressed="false">
+          <span class="vh" id="themeLabel">Night page</span>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.5" />
+            <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" />
+          </svg>
+        </button>
+        <button class="icon-btn bar-menu" id="menuToggle" type="button" aria-expanded="false" aria-controls="contents">
+          <span class="vh">Contents</span>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+            <path d="M3 6h18M3 12h18M3 18h12" fill="none" stroke="currentColor" stroke-width="3" />
+          </svg>
+        </button>
+      </div>
+      <div class="bar-progress" aria-hidden="true"><span id="progress"></span></div>
     </header>
 
+    <nav class="contents" id="contents" aria-label="Contents" hidden>
+      <p class="contents-title" aria-hidden="true">Contents</p>
+      <ol>
+        <li><a href="#work"><span>The work</span></a></li>
+        <li><a href="#story"><span>The story so far</span></a></li>
+        <li><a href="#profile"><span>Character file</span></a></li>
+        <li><a href="#extras"><span>Off the clock</span></a></li>
+        <li><a href="#contact"><span>To be continued</span></a></li>
+      </ol>
+    </nav>
+
     <main id="main">
-      <section class="hero" id="top" aria-labelledby="heroName">
-        <div class="cover-art">
-          <svg class="focus" id="focusLines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-            <path fill="currentColor" />
-          </svg>
-          <div class="halftone" aria-hidden="true"></div>
-          <div class="wrap hero-title">
-            <p class="kana" id="heroKana" lang="ja" aria-hidden="true"></p>
-            <h1 id="heroName" translate="no"></h1>
-            <p class="cover-lines" id="heroMeta"></p>
+      <!-- The cover: a splash page in four panels -->
+      <section class="cover page" id="top" aria-labelledby="coverName">
+        <div class="cover-grid">
+          <div class="panel splash" id="splash">
+            <svg class="focus" id="focus" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false"></svg>
+            <p class="splash-kana" id="coverKana" lang="ja" aria-hidden="true"></p>
+            <p class="sfx splash-sfx" aria-hidden="true"><span lang="ja">ドン</span><small>don</small></p>
+            <h1 class="splash-name" id="coverName" translate="no"><span>Jacob</span> <span>Fratti</span></h1>
+            <p class="splash-tags">
+              <span class="caption" id="coverTitle">Pricing and Analytics</span>
+              <span class="caption caption-spot" id="coverPlace">Orlando, FL</span>
+            </p>
           </div>
-        </div>
-        <div class="cover-foot">
-          <div class="wrap cover-grid">
-            <p class="lede" id="heroTagline"></p>
-            <div class="cover-copy">
-              <p class="intro" id="heroIntro"></p>
-              <div class="links" id="heroLinks"></div>
+
+          <div class="panel says">
+            <div class="halftone" aria-hidden="true"></div>
+            <p class="bubble" id="coverTagline">I build the automation that replaces manual pricing work, and I measure what it saves.</p>
+          </div>
+
+          <div class="panel narrate">
+            <p class="narration" id="coverIntro"></p>
+            <div class="cta" id="coverLinks">
+              <a class="btn btn-ink" href="#work">Read the work</a>
             </div>
-            <dl class="stickers" id="heroStats"></dl>
+          </div>
+
+          <div class="panel tags-panel">
+            <dl class="stickers" id="coverStats"></dl>
           </div>
         </div>
       </section>
 
-      <section class="page" id="about" aria-labelledby="h-about">
-        <div class="wrap side">
-          <header class="chapter">
-            <h2 id="h-about">About</h2>
-          </header>
-          <div class="body about" id="aboutBody"></div>
-        </div>
+      <section class="page" id="work" aria-labelledby="h-work">
+        <header class="page-head">
+          <h2 id="h-work">The work</h2>
+          <p id="workNote"></p>
+        </header>
+        <div id="chapters"></div>
       </section>
 
-      <section class="page" id="experience" aria-labelledby="h-experience">
-        <div class="wrap side">
-          <header class="chapter">
-            <h2 id="h-experience">Experience</h2>
-          </header>
-          <div class="body roles" id="experienceBody"></div>
-        </div>
+      <section class="page" id="story" aria-labelledby="h-story">
+        <header class="page-head">
+          <h2 id="h-story">The story so far</h2>
+          <p id="storyNote"></p>
+        </header>
+        <ol class="yonkoma" id="yonkoma"></ol>
       </section>
 
-      <section class="page night" id="projects" aria-labelledby="h-projects">
-        <div class="halftone" aria-hidden="true"></div>
-        <p class="sfx sfx-projects" lang="ja" aria-hidden="true">カタカタ</p>
-        <div class="wrap">
-          <header class="chapter">
-            <h2 id="h-projects">Projects</h2>
-            <p>Open any title for the full write-up.</p>
-          </header>
-          <div id="projectGroups"></div>
-        </div>
+      <section class="page" id="profile" aria-labelledby="h-profile">
+        <header class="page-head">
+          <h2 id="h-profile">Character file</h2>
+          <p id="profileNote"></p>
+        </header>
+        <div class="file" id="file"></div>
       </section>
 
-      <section class="page" id="skills" aria-labelledby="h-skills">
-        <div class="wrap side">
-          <header class="chapter">
-            <h2 id="h-skills">Skills and education</h2>
-          </header>
-          <div class="body">
-            <div class="kit" id="skillsBody"></div>
-            <div class="school" id="educationBody"></div>
+      <section class="page" id="extras" aria-labelledby="h-extras">
+        <header class="page-head">
+          <h2 id="h-extras">Off the clock</h2>
+          <p id="extrasNote"></p>
+        </header>
+        <div class="omake" id="omake"></div>
+      </section>
+
+      <section class="page finale" id="contact" aria-labelledby="h-contact">
+        <div class="panel night end">
+          <svg class="focus" id="focusEnd" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false"></svg>
+          <p class="tsuzuku" lang="ja" aria-hidden="true">つづく</p>
+          <div class="end-in">
+            <h2 id="h-contact">To be continued</h2>
+            <p class="bubble bubble-flat" id="contactNote"></p>
+            <div class="cta" id="contactLinks"></div>
           </div>
-        </div>
-      </section>
-
-      <section class="page" id="offclock" aria-labelledby="h-offclock" hidden>
-        <div class="wrap side">
-          <header class="chapter">
-            <h2 id="h-offclock"></h2>
-            <p id="offclockNote"></p>
-            <div class="case">
-              <div class="rack" id="rack"></div>
-            </div>
-          </header>
-          <div class="body desk" id="desk"></div>
         </div>
       </section>
 
       <noscript>
-        <p class="noscript">This page is built in the browser. Turn on JavaScript to read it.</p>
+        <p class="noscript">This page is lettered in the browser. Turn on JavaScript to read the chapters.</p>
       </noscript>
     </main>
 
     <footer class="colophon">
-      <div class="wrap colophon-in">
-        <p class="hand signoff">To be continued.</p>
-        <div class="colophon-links" id="footerLinks"></div>
-        <div class="colophon-small">
-          <p id="footerText"></p>
-          <p class="credit">
-            Title lettering: Dracutaz by Dhabee Studio. Text: M PLUS 1. Notes: East Sea Dokdo.
-          </p>
-        </div>
-        <a class="to-top" href="#top">Back to the cover</a>
-        <p class="colophon-name" id="footerName" aria-hidden="true"></p>
-      </div>
+      <p id="footerText"></p>
+      <p>Lettering: Dela Gothic One. Text: M PLUS 1. Both under the SIL Open Font License.</p>
+      <a href="#top">Back to the cover</a>
     </footer>
 
-    <dialog class="reader" id="projectModal" aria-labelledby="modalTitle">
-      <button class="reader-close" id="modalClose" type="button" aria-label="Close">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-          <path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="square" />
-        </svg>
-      </button>
-      <div id="modalBody"></div>
+    <dialog class="reader" id="reader" aria-labelledby="readerTitle">
+      <div class="reader-bar">
+        <p class="reader-where" id="readerWhere"></p>
+        <div class="reader-nav">
+          <button class="icon-btn" id="readerPrev" type="button">
+            <span class="vh">Previous chapter</span>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="3" /></svg>
+          </button>
+          <button class="icon-btn" id="readerNext" type="button">
+            <span class="vh">Next chapter</span>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3" /></svg>
+          </button>
+          <button class="icon-btn" id="readerClose" type="button">
+            <span class="vh">Close chapter</span>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="3" /></svg>
+          </button>
+        </div>
+      </div>
+      <article class="reader-page" id="readerBody"></article>
     </dialog>
 
     <script src="js/content.js"></script>

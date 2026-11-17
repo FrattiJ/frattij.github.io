@@ -2,30 +2,29 @@
 
 Everything here is served from this site. Nothing is loaded from a font service.
 
-| File                        | Font            | Used for               | License                                   | License text            |
-| --------------------------- | --------------- | ---------------------- | ----------------------------------------- | ----------------------- |
-| `Dracutaz.woff2`            | Dracutaz        | Title lettering        | 1001Fonts Free For Commercial Use (FFC)   | `Dracutaz-LICENSE.txt`  |
-| `MPLUS1-latin-wght.woff2`   | M PLUS 1        | Text                   | SIL Open Font License 1.1                 | `MPLUS1-OFL.txt`        |
-| `EastSeaDokdo-latin.woff2`  | East Sea Dokdo  | Hand-lettered notes    | SIL Open Font License 1.1                 | `EastSeaDokdo-OFL.txt`  |
-| `ReggaeOne-kana.woff2`      | Reggae One      | Japanese sound effects | SIL Open Font License 1.1                 | `ReggaeOne-OFL.txt`     |
+| File                        | Font            | Used for                                  | License                     | License text            |
+| --------------------------- | --------------- | ----------------------------------------- | --------------------------- | ----------------------- |
+| `DelaGothicOne.woff2`       | Dela Gothic One | Lettering: the name, titles, sound effects | SIL Open Font License 1.1   | `DelaGothicOne-OFL.txt` |
+| `MPLUS1-latin-wght.woff2`   | M PLUS 1        | Text                                      | SIL Open Font License 1.1   | `MPLUS1-OFL.txt`        |
 
-## Dracutaz
+## Dela Gothic One
 
-By Dhabee Studio, from https://www.1001fonts.com/dracutaz-font.html. Free for personal and commercial use. The terms that shape how it is used here:
+From the Google Fonts repository (`ofl/delagothicone`). The full font covers thousands of Japanese characters, so the file here is cut down to what the site uses, which the Open Font License permits:
 
-- **No modification.** The file is the designer's `Dracutaz.ttf` repackaged as WOFF2, which the license allows. Glyphs, names and metrics are untouched. Do not subset it, rename it or edit glyphs.
-- **Embedding yes, redistribution no.** A web page may embed it, but must not offer it as a download. Keep only the web font here: do not add the original zip, TTF or OTF to this repository, and do not link to the font file.
+- Basic Latin, Latin-1 and common punctuation
+- All of hiragana and katakana (the cover reading of the name, the sound effects, and the closing つづく)
+- Five kanji: 起 承 転 結 (the four beats of the career strip) and 巻
 
-## Muneban (not included)
+To letter a new sound effect in katakana or hiragana, nothing needs to change. To use a kanji that is not in that list, rebuild the subset with fontTools:
 
-By idealistudio, from https://www.1001fonts.com/muneban-font.html. It is free for personal use only, and its readme says commercial use needs a paid license (sold on Creative Market, linked from that page). A site used to find work is a gray area at best, so it is not shipped here.
+```bash
+pyftsubset DelaGothicOne-Regular.ttf \
+  --unicodes="U+0020-007E,U+00A0-00FF,U+2010-2027,U+2030-203A,U+2190-2193,U+00D7,U+3040-309F,U+30A0-30FF,U+3000-3003,U+300C-300F,U+FF01,U+FF1F,U+8D77,U+627F,U+8EE2,U+7D50,U+5DFB" \
+  --layout-features='*' --flavor=woff2 --output-file=DelaGothicOne.woff2
+```
 
-East Sea Dokdo stands in for it. To switch once Muneban is licensed for this site:
+Add the new character's code point to `--unicodes`.
 
-1. Put `Muneban-Regular.woff2` in this folder.
-2. In `css/style.css`, uncomment the `@font-face` block for Muneban near the top.
-3. In the same file, put `"Muneban"` first in the `--hand` token.
+## M PLUS 1
 
-## The open fonts
-
-M PLUS 1 and East Sea Dokdo are the Latin subsets published by Fontsource, unchanged. Reggae One is cut down to katakana and a few punctuation marks, which the Open Font License permits.
+The Latin subset published by Fontsource, unchanged, as a variable font (weights 100 to 900).

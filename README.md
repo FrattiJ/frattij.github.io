@@ -1,68 +1,76 @@
 # Jacob Fratti, personal site
 
-A one-page professional site for the resume: who I am, what I am looking for, experience, projects, skills and education, plus a shelf of books for life outside work. It is drawn as a punk manga volume set on a strict editorial grid: a cover with brush lettering, focus lines, halftone screentone and price-gun stickers for the headline numbers, then ruled ledgers for the roles and skills, and a night spread that indexes the projects by title.
+A design portfolio read like a manga volume. The cover is a splash page with the name lettered over focus lines. Each project is a chapter that opens into a reader and is told panel by panel. The career is a four-panel strip, and the rest is a character file and a few bonus pages.
 
-Plain HTML, CSS, and JavaScript. No framework, no build step, no dependencies, no third-party requests.
+It is black ink on white paper with screentone and one spot colour, a price-sticker yellow. On a desktop the sections are paneled spreads with slanted gutters. On a phone the same panels stack into a vertical strip.
+
+Plain HTML, CSS and JavaScript. No framework, no build step, no dependencies, no third-party requests.
 
 ## Editing content
 
 **You only need to edit [`js/content.js`](js/content.js).** Every section of the site is generated from it.
 
-| Want to...                      | Edit this in `content.js`                              |
-| ------------------------------- | ------------------------------------------------------ |
-| Change headline or intro        | `title`, `tagline`, `intro`                            |
-| Change the stickers on the cover | `highlights` (add `was: "..."` to print a markdown)   |
-| Update About or career goals    | `about`, `goals`                                       |
-| Add a project                   | Copy an entry in `projects`, set its `group`           |
-| Update experience or education  | `resume.experience`, `resume.education`                |
-| Change the books on the shelf   | `offClock.books` (one book per interest)               |
-| Use a real image for a project  | `image` on the project (it replaces the drawing)       |
-| Change the links                | `links` (the first link is the main button)            |
-| Change the katakana on the cover | `nameKana` (leave it `""` to hide it)                 |
+| Want to...                         | Edit this in `content.js`                                         |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| Change the headline or intro       | `title`, `tagline` (the speech bubble), `intro`                   |
+| Change the stickers on the cover   | `highlights` (add `was: "..."` to print a markdown)               |
+| Change a section heading or note   | `sections`                                                        |
+| Update About or career goals       | `about`, `goals` (both appear in the character file)              |
+| Add a project                      | Copy an entry in `projects` and set its `group`                   |
+| Change a chapter's one-liner       | `hook` on the project                                             |
+| Change a chapter's sound effect    | `sfx` on the project: `kana` is lettered big, `say` is the gloss  |
+| Use a real image for a project     | `image` and `imageAlt` on the project (replaces the drawing)      |
+| Update experience or education     | `resume.experience`, `resume.education`                           |
+| Change the big number in the strip | `figure` on an experience or education entry                      |
+| Change the bonus pages             | `offClock.books`                                                  |
+| Change the links                   | `links` (the first one is the main button)                        |
+| Change the katakana on the cover   | `nameKana` (leave it `""` to hide it)                             |
 
-Each project has a shareable link, e.g. `https://frattij.github.io/#project/pricing-tool` opens that write-up directly. The button at the right of the top bar opens a palette picker: Ink and Night (black and white with one red accent, following the visitor's system setting until they choose), plus six palettes that take their ground and lettering colour from Dorohedoro covers. The choice is remembered on that device. The Projects section is always the dark side of the current palette.
+Two things live outside `content.js` because link previews cannot run JavaScript: the `<title>` and the `og:` tags at the top of [`index.html`](index.html), and the preview card [`assets/share.jpg`](assets/share.jpg), a 1200 x 630 shot of the cover. Update them if the name, title or cover changes.
 
-Two things live outside `content.js` because link previews cannot run JavaScript: the `<title>` and the `og:` tags at the top of [`index.html`](index.html), and the preview card [`assets/share.jpg`](assets/share.jpg), which is a 1200 x 630 screenshot of the cover. Update them if the name, title or cover changes.
+## How the pages are built
+
+| Section          | What it is                                                                                                                                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cover            | A splash panel with the name, the reading of the name set vertically, and a sound effect. Under it: the tagline as a speech bubble, the intro as narration with the links, and the highlights as price stickers. |
+| The work         | One card per project, grouped as in `projectGroups`. Cards pair up as wide and narrow panels that alternate; a project left on its own runs full width.                                                       |
+| Chapter reader   | Opening a card opens the chapter: a title spread, then one panel per step of `process`, with the last step set as a black panel. It ends with the next chapter.                                                |
+| The story so far | Experience, oldest first, ending on the first education entry. Four beats, so it is drawn as a yonkoma (a four-panel strip). The third beat, the turn of the story, is the dramatic panel.                     |
+| Character file   | About, a profile pulled from the content, where I am headed, skills and education.                                                                                                                          |
+| Off the clock    | One bonus page per entry in `offClock.books`. The `spine` word runs up the side like a book spine. `color` sets the panel: `accent` yellow, `ink` black, `grey` toned, `paper` plain.                         |
+| To be continued  | The contact panel, from `sections.contact` and `links`.                                                                                                                                                      |
+
+Every chapter has a shareable link, such as `https://frattij.github.io/#chapter/pricing-tool`. Old `#project/...` links still open the right chapter. In the reader, the arrow keys move between chapters, Escape or the browser's back button closes it, and focus returns to the card that opened it.
 
 ## Look and type
 
-Colors and fonts are tokens at the top of [`css/style.css`](css/style.css). Each palette is one short block there; to add one, copy a block, give it an id, and list it in `PALETTES` in [`js/main.js`](js/main.js).
+Colours and fonts are tokens at the top of [`css/style.css`](css/style.css).
 
-| Role                   | Font            | License                                              |
-| ---------------------- | --------------- | ---------------------------------------------------- |
-| Title lettering        | Dracutaz        | 1001Fonts Free For Commercial Use, by Dhabee Studio  |
-| Text                   | M PLUS 1        | SIL Open Font License 1.1                            |
-| Hand-lettered notes    | East Sea Dokdo  | SIL Open Font License 1.1                            |
-| Japanese sound effects | Reggae One      | SIL Open Font License 1.1                            |
+| Role                               | Font            | License                   |
+| ---------------------------------- | --------------- | ------------------------- |
+| Lettering, titles, sound effects   | Dela Gothic One | SIL Open Font License 1.1 |
+| Text                               | M PLUS 1        | SIL Open Font License 1.1 |
 
-All four are self-hosted in [`assets/fonts`](assets/fonts), with their license texts beside them. See [`assets/fonts/README.md`](assets/fonts/README.md) for the terms that matter, including how to switch the hand-lettered notes to Muneban once it is licensed for this site.
+Both are self-hosted in [`assets/fonts`](assets/fonts) with their licenses. See [`assets/fonts/README.md`](assets/fonts/README.md) for how the lettering font is subset and how to add a character.
 
-## Drawings
+The day page follows the visitor's system setting until they press the switch in the top bar, which floods the other page out from the button and is remembered on that device. The night page flips the inks, and black panels flip with it.
 
-Until real artwork is ready, the site carries placeholder illustrations drawn as vector ink in [`js/art.js`](js/art.js): a price gun on the cover, one under each margin title (a crate for About, a route map for Experience, a ledger for Skills), one per project, and one per book on the shelf. They are drawn in the palette's own inks, so they change with it, dark mode included. Each is keyed by a section, project or book `id`.
+The drawings are vector ink in [`js/art.js`](js/art.js), keyed by project id, bonus page id, and `about` for the character file. They take the page's own inks, so they change between day and night.
 
-- To use a real image for a project, give it `image` (and `imageAlt`) in `content.js`. It replaces the drawing in the project's row and in its write-up.
-- To replace any other drawing, change or delete its entry in `art.js`. A missing entry simply leaves the space out.
+## Motion
 
-## The shelf
+Motion is kept to a few moments that each mean something:
 
-The shelf stands in the margin beside an open book. The first book starts shut and swings open the first time it comes into view. Choosing another spine does what you would do with real books: the open one is closed and goes back on the shelf as its spine drops into the row, the chosen spine comes up, and its book is taken down and opened. Choosing again while that is happening goes straight to the new book. Where there is no room for a two-page spread, or the visitor asks for reduced motion, the drawing sits above the reading and books change with a cut.
+- **The opening.** The focus lines burst, the name slams down with a small shake, the reading drops in and the stickers are slapped on. As the cover scrolls away the lines rush outward.
+- **Reading order.** Chapter cards and the strip's four panels are inked in left to right the first time they come into view.
+- **Opening a chapter.** The reader turns in like a page and its panels follow in reading order. Changing chapters turns the page again.
+- **Hover.** A chapter card draws focus lines behind its drawing, shows its sound effect and marks its title.
 
-## Layout and motion
+Visitors who ask their system for reduced motion get none of it and nothing is hidden from them. The scroll-linked extras are skipped by browsers that cannot do them.
 
-Every section sits on the same twelve columns. About, Experience and Skills keep their title in the left margin, where it stays put while the rows scroll past; Projects and the shelf run full width. The first paragraph of `about.paragraphs` is set large as the lead, and the rest sit beside the goals.
+## Accessibility
 
-Motion is kept to a few moments, all in hard frames to match the print look. They live in [`css/style.css`](css/style.css) under "Opening sequence" and "Motion", and are switched on by short functions at the bottom of [`js/main.js`](js/main.js).
-
-- On the cover, the sticker figures tick up as they land, and the focus lines rush outward as the cover scrolls away.
-- Each section title is stamped down as you reach it and its brush swash is pulled across.
-- Changing books on the shelf, described above.
-- A red line along the top bar tracks reading progress, and a new palette floods out from the palette button.
-
-Hover is kept quiet on purpose: a project title turns the spot colour, a spine lifts slightly, buttons press. Nothing follows the pointer.
-- The name is lettered again across the back cover and rises into place.
-
-Visitors who ask their system for reduced motion get none of it and nothing is ever hidden from them. The scroll-linked extras and the palette flood are skipped by browsers that cannot do them.
+Landmarks and a skip link, one `h1` and a heading outline that follows the page, visible focus on everything, a native modal dialog for the reader, 44 px touch targets, and colour contrast that passes WCAG AA on both pages. Decorative lettering (sound effects, the vertical reading, the kanji) is hidden from screen readers. An axe-core audit of both pages and the reader reports no violations.
 
 ## Previewing locally
 
@@ -80,12 +88,14 @@ This repository is named `frattij.github.io`, so with **Settings > Pages > Build
 
 ```
 index.html        page skeleton, link-preview tags
-css/style.css     all styling (colors and fonts are tokens at the top)
+css/style.css     all styling (colours and fonts are tokens at the top)
 js/content.js     YOUR CONTENT
-js/main.js        renders content into the page
+js/art.js         vector ink drawings
+js/main.js        renders content into the page, runs the reader and the motion
 assets/fonts/     self-hosted web fonts and their licenses
 assets/           favicon, link-preview card, project images if any
 .claude/skills/   design skills for Claude Code sessions (not part of the site)
+.mcp.json         MCP servers for Claude Code sessions (not part of the site)
 ```
 
 ## Design skills for Claude Code

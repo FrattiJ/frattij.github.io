@@ -1,804 +1,619 @@
-/* Renders the site from SITE (defined in content.js). You should not need to edit this file. */
+/* Builds the volume from js/content.js and runs its few moving parts:
+   the cover's opening, the chapter reader, the four-panel strip, the top bar,
+   and the day and night pages. */
 (function () {
   "use strict";
 
-  const $ = (sel) => document.querySelector(sel);
+  /* global SITE */
+  const S = typeof SITE !== "undefined" ? SITE : window.SITE;
+  const ART = window.ART || {};
   const root = document.documentElement;
+  const $ = (sel, scope = document) => scope.querySelector(sel);
+  const $$ = (sel, scope = document) => Array.from(scope.querySelectorAll(sel));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  // Straight quotes and three dots in content.js come out as the typographic ones on the page.
-  const typo = (s) =>
-    String(s)
-      .replace(/\.\.\./g, "…")
-      .replace(/(^|[\s(\[{])"/g, "$1“")
-      .replace(/"/g, "”")
-      .replace(/(^|[\s(\[{])'/g, "$1‘")
-      .replace(/'/g, "’");
+  const esc = (value) =>
+    String(value == null ? "" : value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const art = (id) => (typeof ART[id] === "function" ? ART[id]() : "");
+  const STATUS = { shipped: "In use", active: "In progress", planned: "Planned" };
+  const links = (S.links || []).filter((l) => l && l.url);
 
-  // Tiny element builder: h("div", { class: "x", onclick: fn }, child1, "text", ...)
-  function h(tag, attrs, ...children) {
-    const el = document.createElement(tag);
-    for (const [k, v] of Object.entries(attrs || {})) {
-      if (v === undefined || v === null || v === false) continue;
-      if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
-      else if (k === "class") el.className = v;
-      else el.setAttribute(k, v === true ? "" : v);
+  /* ---------- Focus lines: seeded wedges running in toward the centre ---------- */
+  function focusLines(svg, { count = 150, seed = 7, inner = [330, 470], cy = 500 } = {}) {
+    if (!svg) return;
+    const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+    const pt = (a, r) => `${(500 + Math.cos(a) * r).toFixed(1)} ${(cy + Math.sin(a) * r).toFixed(1)}`;
+    let d = "";
+    for (let i = 0; i < count; i++) {
+      const a = ((i + rnd() * 0.9) / count) * Math.PI * 2;
+      const half = 0.003 + rnd() * 0.013;
+      const reach = inner[0] + rnd() * (inner[1] - inner[0]);
+      d += `M${pt(a - half, 1500)}L${pt(a + half, 1500)}L${pt(a, reach)}Z`;
     }
-    for (const c of children.flat(Infinity)) {
-      if (c === null || c === undefined || c === false) continue;
-      el.append(c instanceof Node ? c : document.createTextNode(typo(c)));
-    }
-    return el;
+    svg.innerHTML = `<path fill="currentColor" d="${d}"/>`;
   }
 
-  const has = (s) => typeof s === "string" && s.trim() !== "";
-  const isExternal = (url) => /^https?:/.test(url);
-  const linkAttrs = (url) =>
-    isExternal(url) ? { href: url, target: "_blank", rel: "noopener noreferrer" } : { href: url };
-  const newTabNote = (url) => (isExternal(url) ? h("span", { class: "vh" }, " (opens in a new tab)") : null);
-  const visibleLinks = (links) => (links || []).filter((l) => has(l.url));
-
-  const nb = (t) => String(t).replace(/ /g, "\u00A0"); // keeps a figure and its unit on one line
-  const STATUS_LABEL = { shipped: "In use", active: "In progress", planned: "Planned" };
-  const statusStamp = (s) => h("span", { class: "stamp" }, STATUS_LABEL[s] || s);
-  const range = (x) =>
-    [x.start, x.end]
-      .filter(has)
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .join(" to ");
-
-  /* ---------- Brush lettering ----------
-     The title font draws capitals in both cases, and its lowercase slots hold a second drawing of
-     most letters. Every repeat of a letter takes the other drawing, so the two Ts in FRATTI are not
-     the same stamp twice. The real text goes in aria-label; the lettered copy is decoration. */
-  function alternates(text) {
-    const seen = {};
-    return [...text].map((ch) => {
-      const key = ch.toLowerCase();
-      if (!/[a-z]/.test(key)) return { ch, alt: false };
-      seen[key] = (seen[key] || 0) + 1;
-      return { ch, alt: seen[key] % 2 === 0 };
-    });
-  }
-  function brush(text) {
-    const words = [[]];
-    for (const part of alternates(typo(text))) {
-      if (/\s/.test(part.ch)) words.push([]);
-      else words[words.length - 1].push(part.alt ? h("span", { class: "alt" }, part.ch) : part.ch);
-    }
-    const filled = words.filter((w) => w.length);
-    return h(
-      "span",
-      { class: "brush", "aria-hidden": "true" },
-      filled.map((w, i) => [h("span", { class: "w" }, w), i < filled.length - 1 ? " " : null])
+  /* ---------- Cover ---------- */
+  function renderCover() {
+    const words = String(S.name || "").trim().split(/\s+/);
+    const first = words.shift() || "";
+    $("#coverName").innerHTML = `<span>${esc(first)}</span> <span>${esc(words.join(" "))}</span>`;
+    $("#coverKana").textContent = S.nameKana || "";
+    if (!S.nameKana) $("#coverKana").hidden = true;
+    $("#coverTitle").textContent = S.title || "";
+    $("#coverPlace").textContent = S.location || "";
+    $("#coverTagline").textContent = S.tagline || "";
+    $("#coverIntro").textContent = S.intro || "";
+    $("#coverLinks").insertAdjacentHTML(
+      "beforeend",
+      links.map((l) => `<a class="btn" href="${esc(l.url)}">${esc(l.label)}</a>`).join("")
     );
-  }
-  const lettered = (el, text) => {
-    el.setAttribute("aria-label", text);
-    el.replaceChildren(brush(text));
-    return el;
-  };
-
-  /* ---------- Drawings ----------
-     js/art.js draws a placeholder for a section, project or book by its id. A project's own image wins. */
-  const hasArt = (id) => typeof ART === "object" && typeof ART[id] === "function";
-  function drawing(id, cls) {
-    if (!hasArt(id)) return null;
-    const el = h("div", { class: cls, "aria-hidden": "true" });
-    el.innerHTML = ART[id]();
-    return el;
-  }
-
-  /* ---------- Palettes ----------
-     Each id matches a :root[data-theme="..."] block in css/style.css. ground and accent are repeated
-     here only to paint the swatches and the browser's theme colour. */
-  const PALETTES = [
-    { id: "light", name: "Ink", ground: "#e8e8e3", accent: "#d8121c" },
-    { id: "dark", name: "Night", ground: "#0e0e0e", accent: "#d8121c" },
-    { id: "v12", name: "Vol. 12", ground: "#5b9bd8", accent: "#f472a6" },
-    { id: "v14", name: "Vol. 14", ground: "#dcbf85", accent: "#2b9a4a" },
-    { id: "v11", name: "Vol. 11", ground: "#cf5f43", accent: "#d9d62b" },
-    { id: "v19", name: "Vol. 19", ground: "#f2a765", accent: "#7fbf3a" },
-    { id: "v18", name: "Vol. 18", ground: "#0b0b0b", accent: "#f0528f" },
-    { id: "v10", name: "Vol. 10", ground: "#3b2a78", accent: "#b89a3e" },
-  ];
-  const systemDark = matchMedia("(prefers-color-scheme: dark)");
-  const stillPlease = matchMedia("(prefers-reduced-motion: reduce)");
-  const activePalette = () =>
-    PALETTES.find((p) => p.id === root.dataset.theme) || PALETTES[systemDark.matches ? 1 : 0];
-
-  function initPalettes() {
-    const btn = $("#paletteToggle");
-    const menu = $("#paletteMenu");
-    // a saved id that no longer exists falls back to the system setting
-    if (root.dataset.theme && !PALETTES.some((p) => p.id === root.dataset.theme)) delete root.dataset.theme;
-
-    const paint = () => {
-      const p = activePalette();
-      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", p.ground));
-      menu.querySelectorAll("input").forEach((i) => (i.checked = i.value === p.id));
-    };
-    const apply = (id) => {
-      root.dataset.theme = id;
-      try {
-        localStorage.setItem("theme", id);
-      } catch (e) {}
-      paint();
-    };
-    // The new palette floods out from the palette button, like ink dropped on the page.
-    const choose = (id) => {
-      if (!document.startViewTransition || stillPlease.matches) return apply(id);
-      const r = btn.getBoundingClientRect();
-      root.style.setProperty("--vx", `${(r.left + r.width / 2).toFixed(0)}px`);
-      root.style.setProperty("--vy", `${(r.top + r.height / 2).toFixed(0)}px`);
-      document.startViewTransition(() => apply(id));
-    };
-    menu.append(
-      ...PALETTES.map((p) =>
-        h(
-          "label",
-          {},
-          h("input", { type: "radio", name: "palette", value: p.id, onchange: () => choose(p.id) }),
-          h("span", { class: "chip", style: `--g:${p.ground};--a:${p.accent}`, "aria-hidden": "true" }),
-          p.name
-        )
+    $("#coverStats").innerHTML = (S.highlights || [])
+      .map((h, n) =>
+        h.was
+          ? `<div class="sticker sticker-mark" style="--n:${n}"><dt>${esc(h.label)}</dt>` +
+            `<dd><s><span class="vh">was </span>${esc(h.was)}</s><span class="vh">now </span>${esc(h.value)}</dd></div>`
+          : `<div class="sticker" style="--n:${n}"><dt>${esc(h.label)}</dt><dd>${esc(h.value)}</dd></div>`
       )
+      .join("");
+    focusLines($("#focus"), { count: 170, seed: 11, inner: [360, 480] });
+  }
+
+  /* ---------- Section headings ---------- */
+  function renderHeads() {
+    const sec = S.sections || {};
+    const set = (h, p, d) => {
+      if (!d) return;
+      if (d.heading) $(h).textContent = d.heading;
+      $(p).textContent = d.note || "";
+    };
+    set("#h-work", "#workNote", sec.work);
+    set("#h-story", "#storyNote", sec.story);
+    set("#h-profile", "#profileNote", sec.profile);
+    set("#h-extras", "#extrasNote", S.offClock && { heading: S.offClock.heading, note: S.offClock.note });
+    set("#h-contact", "#contactNote", sec.contact);
+    // keep the phone contents page in step with the headings
+    const names = ["#h-work", "#h-story", "#h-profile", "#h-extras", "#h-contact"].map((h) => $(h).textContent);
+    $$(".contents a span").forEach((s, i) => (s.textContent = names[i]));
+  }
+
+  /* ---------- Shared layout: pairs of 7 and 5 columns that alternate, a lone one runs full width ---------- */
+  function pairSizes(count, start) {
+    const out = [];
+    let flip = start;
+    for (let i = 0; i < count; i += 2) {
+      if (i + 1 < count) {
+        out.push(flip ? ["w5", "cut-r"] : ["w7", "cut-r"], flip ? ["w7", "cut-l"] : ["w5", "cut-l"]);
+        flip = !flip;
+      } else out.push(["w12", ""]);
+    }
+    return { sizes: out, next: flip };
+  }
+
+  /* ---------- The work ---------- */
+  const projects = (S.projects || []).filter((p) => p && p.id);
+  const indexOf = (id) => projects.findIndex((p) => p.id === id);
+
+  function chapterArt(p, withSfx) {
+    const pic = p.image
+      ? `<img src="${esc(p.image)}" alt="${esc(p.imageAlt || "")}" loading="lazy" decoding="async" />`
+      : art(p.id);
+    const sfx =
+      withSfx && p.sfx && p.sfx.kana
+        ? `<p class="sfx card-sfx" aria-hidden="true"><span lang="ja">${esc(p.sfx.kana)}</span><small>${esc(p.sfx.say || "")}</small></p>`
+        : "";
+    return `<span class="card-tone" aria-hidden="true"></span><span class="card-lines" aria-hidden="true"></span>${sfx}${pic}`;
+  }
+
+  function renderChapters() {
+    const groups = S.projectGroups && S.projectGroups.length ? S.projectGroups : [{ id: null, title: "", note: "" }];
+    let flip = false;
+    const html = groups
+      .map((g) => {
+        const list = projects.filter((p) => !g.id || p.group === g.id);
+        if (!list.length) return "";
+        const { sizes, next } = pairSizes(list.length, flip);
+        flip = next;
+        const cards = list
+          .map((p, k) => {
+            const n = indexOf(p.id) + 1;
+            const [w, cut] = sizes[k];
+            const status = STATUS[p.status] ? `<span class="status">${STATUS[p.status]}</span>` : "";
+            return (
+              `<li class="panel card ${w} ${cut}" data-reveal style="--i:${k % 2}">` +
+              `<div class="card-art">${chapterArt(p, true)}</div>` +
+              `<div class="card-body">` +
+              `<p class="card-num"><span>Chapter ${n}</span>${status}${p.year ? `<span>${esc(p.year)}</span>` : ""}</p>` +
+              `<h4 class="card-title"><a href="#chapter/${esc(p.id)}" data-chapter="${esc(p.id)}">${esc(p.title)}</a></h4>` +
+              (p.hook ? `<p class="card-hook">${esc(p.hook)}</p>` : "") +
+              `<p class="card-sum">${esc(p.summary)}</p>` +
+              (p.tags && p.tags.length ? `<ul class="tags" aria-label="Built with">${p.tags.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : "") +
+              `</div>` +
+              `<span class="card-big" aria-hidden="true">${n}</span>` +
+              `</li>`
+            );
+          })
+          .join("");
+        const head = g.title
+          ? `<header class="group-head"><h3>${esc(g.title)}</h3>${g.note ? `<p>${esc(g.note)}</p>` : ""}</header>`
+          : "";
+        return `<div class="chapter-group">${head}<ol class="chapters">${cards}</ol></div>`;
+      })
+      .join("");
+    $("#chapters").innerHTML = html;
+  }
+
+  /* ---------- The story so far ---------- */
+  function figure(f) {
+    if (!f || !f.value) return "";
+    const val = f.was
+      ? `<s><span class="vh">was </span>${esc(f.was)}</s><span class="vh">now </span><mark>${esc(f.value)}</mark>`
+      : esc(f.value);
+    return `<p class="yk-fig"><span class="yk-val">${val}</span>${f.label ? `<span class="yk-label">${esc(f.label)}</span>` : ""}</p>`;
+  }
+  function when(e) {
+    if (e.start && e.end && e.start !== e.end) return `${e.start} to ${e.end}`;
+    return e.end || e.start || "";
+  }
+  function renderStory() {
+    const r = S.resume || {};
+    const beats = (r.experience || []).slice().reverse();
+    if (r.education && r.education[0]) beats.push(Object.assign({ isSchool: true }, r.education[0]));
+    const kanji = ["起", "承", "転", "結"];
+    $("#yonkoma").innerHTML = beats
+      .map((e, i) => {
+        const pts = e.points || [];
+        const more = pts.length
+          ? pts.length === 1 && !e.isSchool
+            ? `<p>${esc(pts[0])}</p>`
+            : `<details class="more"><summary>${e.isSchool ? "Coursework" : "What I did"}</summary><ul>${pts
+                .map((t) => `<li>${esc(t.replace(/^Coursework:\s*/, ""))}</li>`)
+                .join("")}</ul></details>`
+          : "";
+        return (
+          `<li class="panel yk${i === 2 ? " turn invert" : ""}" data-reveal style="--i:${i}">` +
+          (i === 2 ? `<span class="card-lines" aria-hidden="true"></span>` : "") +
+          (kanji[i] ? `<span class="yk-kanji" lang="ja" aria-hidden="true">${kanji[i]}</span>` : "") +
+          `<p class="caption">${esc(when(e))}</p>` +
+          figure(e.figure) +
+          `<h3>${esc(e.role)}</h3><p class="yk-org">${esc(e.org)}</p>` +
+          more +
+          `</li>`
+        );
+      })
+      .join("");
+  }
+
+  /* ---------- Character file ---------- */
+  function renderFile() {
+    const r = S.resume || {};
+    const job = (r.experience || [])[0];
+    const school = (r.education || [])[0];
+    const first = (s) => String(s || "").split(",")[0].trim();
+    const years = (S.highlights || [])[0];
+    const rows = [
+      ["Based in", S.location],
+      job && ["Works as", `${first(job.role)}, ${first(job.org)}`],
+      years && ["Field", `${years.label}, ${years.value}`],
+      school && ["Studying", `${school.role}, ${school.org}, ${String(school.end || "").replace(/^Expected\s*/i, "finishing ")}`],
+    ].filter((x) => x && x[1]);
+
+    const about = (S.about && S.about.paragraphs) || [];
+    const goals = S.goals || {};
+    const skills = S.skills || {};
+    const edu = r.education || [];
+
+    $("#file").innerHTML =
+      `<div class="panel file-id">` +
+      `<h3 class="file-name" translate="no">${esc(S.name)}</h3>` +
+      art("about") +
+      `<dl class="profile">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` +
+      `</div>` +
+      `<div class="panel file-about">${about.map((t, i) => `<p${i === 0 ? ' class="file-lead"' : ""}>${esc(t)}</p>`).join("")}</div>` +
+      `<div class="panel file-goals"><h3>${esc(goals.heading || "Where I am headed")}</h3>` +
+      (goals.paragraphs || []).map((t) => `<p>${esc(t)}</p>`).join("") +
+      (goals.points && goals.points.length ? `<ul class="points">${goals.points.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : "") +
+      `</div>` +
+      `<div class="panel file-skills"><h3>Skills</h3><div class="kit">` +
+      Object.keys(skills)
+        .map((k) => `<div><h4>${esc(k)}</h4><ul class="tags">${skills[k].map((t) => `<li>${esc(t)}</li>`).join("")}</ul></div>`)
+        .join("") +
+      `</div></div>` +
+      `<div class="panel file-school invert"><h3>Education</h3><ol class="school">` +
+      edu
+        .map(
+          (e) =>
+            `<li><span class="caption caption-spot when">${esc(when(e))}</span><h4>${esc(e.role)}</h4><p class="org">${esc(e.org)}</p>` +
+            (e.points || []).map((t) => `<p class="note">${esc(t)}</p>`).join("") +
+            `</li>`
+        )
+        .join("") +
+      `</ol></div>`;
+  }
+
+  /* ---------- Off the clock ---------- */
+  function renderExtras() {
+    const books = (S.offClock && S.offClock.books) || [];
+    if (!books.length) {
+      $("#extras").hidden = true;
+      $$('a[href="#extras"]').forEach((a) => a.closest("li") ? a.closest("li").remove() : a.remove());
+      return;
+    }
+    const tone = { accent: "spot", ink: "invert", grey: "toned", paper: "" };
+    const { sizes } = pairSizes(books.length, false);
+    $("#omake").innerHTML = books
+      .map((b, i) => {
+        const [w, cut] = sizes[i];
+        const list = (b.list || [])
+          .map((x) => (typeof x === "string" ? { title: x } : x))
+          .map((x) => `<li><strong>${esc(x.title)}</strong>${x.note ? `<span>${esc(x.note)}</span>` : ""}</li>`)
+          .join("");
+        const link = b.link && b.link.url ? `<a class="btn btn-spot" href="${esc(b.link.url)}">${esc(b.link.label)}</a>` : "";
+        return (
+          `<article class="panel bonus ${w} ${cut} ${tone[b.color] || ""}" aria-labelledby="bonus-${esc(b.id)}">` +
+          `<p class="bonus-word" aria-hidden="true">${esc(b.spine)}</p>` +
+          `<div class="bonus-body">${art(b.id)}` +
+          `<h3 id="bonus-${esc(b.id)}">${esc(b.heading)}</h3>` +
+          (b.text ? `<p>${esc(b.text)}</p>` : "") +
+          (list ? `<ul class="reads">${list}</ul>` : "") +
+          link +
+          `</div></article>`
+        );
+      })
+      .join("");
+  }
+
+  /* ---------- To be continued, and the footer ---------- */
+  function renderEnd() {
+    $("#contactLinks").innerHTML = links
+      .map((l, i) => `<a class="btn ${i === 0 ? "btn-spot" : ""}" href="${esc(l.url)}">${esc(l.label)}</a>`)
+      .join("");
+    focusLines($("#focusEnd"), { count: 130, seed: 23, inner: [300, 440] });
+    $("#footerText").textContent = `© ${new Date().getFullYear()} ${S.name}. Drawn in plain HTML, CSS and JavaScript.`;
+  }
+
+  /* ---------- The reader ---------- */
+  const reader = $("#reader");
+  const readerBody = $("#readerBody");
+  let current = -1;
+  let pushedEntry = false;
+  let returnTo = null;
+
+  function stepSpans(n) {
+    const pattern = [4, 2, 2, 4, 3, 3];
+    const out = [];
+    let used = 0;
+    for (let i = 0; i < n; i++) {
+      let s = i === n - 1 ? 6 - used : pattern[i % pattern.length];
+      if (s > 6 - used) s = 6 - used;
+      out.push(s);
+      used = (used + s) % 6;
+    }
+    return out;
+  }
+
+  function renderChapter(i) {
+    const p = projects[i];
+    const n = i + 1;
+    const total = projects.length;
+    const steps = p.process || [];
+    const spans = stepSpans(steps.length);
+    let col = 0;
+    const panels = steps
+      .map((st, k) => {
+        const s = spans[k];
+        const startsRow = col === 0;
+        col = (col + s) % 6;
+        const endsRow = col === 0;
+        const cut = `${startsRow ? "" : "cut-l"} ${endsRow ? "" : "cut-r"}`;
+        const tone = k === steps.length - 1 ? "invert" : "";
+        return `<li class="panel step ${cut} ${tone}" style="--span:${s};--i:${k}"><h3 class="caption">${esc(st.title)}</h3><p>${esc(st.text)}</p></li>`;
+      })
+      .join("");
+    const status = STATUS[p.status] ? `<span class="status">${STATUS[p.status]}</span>` : "";
+    const plinks = (p.links || []).filter((l) => l && l.url);
+    const next = projects[i + 1];
+
+    $("#readerWhere").textContent = `Chapter ${n} of ${total}`;
+    $("#readerPrev").disabled = i === 0;
+    $("#readerNext").disabled = i === total - 1;
+
+    readerBody.innerHTML =
+      `<header class="rd-head" style="--i:0">` +
+      `<div class="panel rd-art">${chapterArt(p, false)}` +
+      (p.sfx && p.sfx.kana ? `<p class="sfx rd-sfx" aria-hidden="true"><span lang="ja">${esc(p.sfx.kana)}</span><small>${esc(p.sfx.say || "")}</small></p>` : "") +
+      `</div>` +
+      `<div class="panel rd-title">` +
+      `<p class="rd-num"><span>Chapter ${n}</span>${status}${p.year ? `<span>${esc(p.year)}</span>` : ""}</p>` +
+      `<h2 id="readerTitle" tabindex="-1">${esc(p.title)}</h2>` +
+      (p.hook ? `<p class="rd-hook">${esc(p.hook)}</p>` : "") +
+      `<p class="rd-sum">${esc(p.summary)}</p>` +
+      (p.tags && p.tags.length ? `<ul class="tags" aria-label="Built with">${p.tags.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : "") +
+      (plinks.length ? `<div class="cta">${plinks.map((l, k) => `<a class="btn ${k === 0 ? "btn-spot" : ""}" href="${esc(l.url)}">${esc(l.label)}</a>`).join("")}</div>` : "") +
+      `</div></header>` +
+      (panels ? `<ol class="rd-panels" aria-label="The chapter, panel by panel">${panels}</ol>` : "") +
+      `<nav class="rd-end" aria-label="More chapters" style="--i:2">` +
+      (next
+        ? `<button class="panel rd-next" type="button" data-go="next"><span class="caption">Next chapter</span><strong>${esc(next.title)}</strong>${next.hook ? `<span class="hint">${esc(next.hook)}</span>` : ""}</button>`
+        : "") +
+      `<button class="panel rd-back" type="button" data-close>Back to all chapters</button>` +
+      `</nav>`;
+  }
+
+  function openChapter(i, { turn = false } = {}) {
+    if (i < 0 || i >= projects.length) return;
+    current = i;
+    renderChapter(i);
+    if (!reader.open) {
+      reader.classList.remove("is-closing");
+      reader.showModal();
+    }
+    reader.scrollTop = 0;
+    if (turn && !reduceMotion.matches) {
+      readerBody.classList.remove("is-turning");
+      void readerBody.offsetWidth;
+      readerBody.classList.add("is-turning");
+    }
+    const title = $("#readerTitle");
+    if (title) title.focus({ preventScroll: true });
+    document.title = `${projects[i].title} | ${S.name}`;
+  }
+
+  function finishClose() {
+    if (reader.open) reader.close();
+    reader.classList.remove("is-closing");
+    current = -1;
+    document.title = `${S.name} | ${S.title}`;
+    const target = returnTo || $(`a[data-chapter]`);
+    returnTo = null;
+    if (target) target.focus({ preventScroll: true });
+  }
+
+  function animateClose() {
+    if (!reader.open) return;
+    if (reduceMotion.matches) return finishClose();
+    reader.classList.add("is-closing");
+    let done = false;
+    const end = () => {
+      if (done) return;
+      done = true;
+      finishClose();
+    };
+    reader.addEventListener("animationend", end, { once: true });
+    setTimeout(end, 400);
+  }
+
+  // Closing goes back through history when the reader added an entry, so the back button and the close button agree.
+  function requestClose() {
+    if (pushedEntry) {
+      pushedEntry = false;
+      history.back();
+    } else {
+      history.replaceState(null, "", "#work");
+      animateClose();
+    }
+  }
+
+  function goTo(i) {
+    if (i < 0 || i >= projects.length) return;
+    history.replaceState(null, "", `#chapter/${projects[i].id}`);
+    openChapter(i, { turn: true });
+  }
+
+  function route() {
+    const m = location.hash.match(/^#(?:chapter|project)\/([\w-]+)$/);
+    const i = m ? indexOf(m[1]) : -1;
+    if (i >= 0) {
+      if (m[0].startsWith("#project/")) history.replaceState(null, "", `#chapter/${projects[i].id}`);
+      if (i !== current) openChapter(i);
+    } else if (reader.open) {
+      animateClose();
+    }
+  }
+
+  function bindReader() {
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a[href^='#chapter/'], a[href^='#project/']");
+      if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const id = a.getAttribute("href").split("/")[1];
+      const i = indexOf(id);
+      if (i < 0) return;
+      e.preventDefault();
+      if (reader.open) return goTo(i);
+      returnTo = a;
+      history.pushState({ chapter: id }, "", `#chapter/${id}`);
+      pushedEntry = true;
+      openChapter(i);
+    });
+    reader.addEventListener("click", (e) => {
+      if (e.target.closest("[data-close]")) requestClose();
+      else if (e.target.closest("[data-go='next']")) goTo(current + 1);
+    });
+    $("#readerClose").addEventListener("click", requestClose);
+    $("#readerPrev").addEventListener("click", () => goTo(current - 1));
+    $("#readerNext").addEventListener("click", () => goTo(current + 1));
+    reader.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      requestClose();
+    });
+    reader.addEventListener("close", () => {
+      if (/^#(chapter|project)\//.test(location.hash)) {
+        pushedEntry = false;
+        history.replaceState(null, "", "#work");
+      }
+      current = -1;
+    });
+    reader.addEventListener("keydown", (e) => {
+      if (e.target.closest("input, textarea, select")) return;
+      if (e.key === "ArrowRight") goTo(current + 1);
+      else if (e.key === "ArrowLeft") goTo(current - 1);
+    });
+    window.addEventListener("hashchange", route);
+  }
+
+  /* ---------- Top bar: progress, hide on the way down, the section you are in ---------- */
+  function bindBar() {
+    const bar = $("#bar");
+    const progress = $("#progress");
+    let lastY = window.scrollY;
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progress.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
+      const down = y > lastY + 4;
+      const up = y < lastY - 4;
+      if (down && y > 240 && !root.classList.contains("menu-open") && !bar.contains(document.activeElement)) bar.classList.add("is-hidden");
+      else if (up || y < 240) bar.classList.remove("is-hidden");
+      if (down || up) lastY = y;
+    };
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true }
     );
-    const setOpen = (open) => {
+    bar.addEventListener("focusin", () => bar.classList.remove("is-hidden"));
+    update();
+
+    const navLinks = $$(".bar-nav a");
+    if ("IntersectionObserver" in window) {
+      const spy = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((en) => {
+            if (!en.isIntersecting) return;
+            navLinks.forEach((a) => {
+              if (a.getAttribute("href") === `#${en.target.id}`) a.setAttribute("aria-current", "true");
+              else a.removeAttribute("aria-current");
+            });
+          });
+        },
+        { rootMargin: "-45% 0px -50% 0px" }
+      );
+      $$("main > section").forEach((s) => spy.observe(s));
+    }
+  }
+
+  /* ---------- Contents page on a phone ---------- */
+  function bindMenu() {
+    const btn = $("#menuToggle");
+    const menu = $("#contents");
+    const outside = [$("main"), $(".colophon")];
+    const set = (open) => {
       menu.hidden = !open;
       btn.setAttribute("aria-expanded", String(open));
-      if (open) (menu.querySelector("input:checked") || menu.querySelector("input")).focus();
+      root.classList.toggle("menu-open", open);
+      outside.forEach((el) => (el.inert = open));
+      if (open) $("a", menu).focus();
     };
-    btn.addEventListener("click", () => setOpen(menu.hidden));
-    document.addEventListener("click", (e) => {
-      if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) setOpen(false);
+    btn.addEventListener("click", () => set(menu.hidden));
+    menu.addEventListener("click", (e) => {
+      if (e.target.closest("a")) set(false);
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && !menu.hidden) {
-        setOpen(false);
+        set(false);
         btn.focus();
       }
     });
-    systemDark.addEventListener("change", paint);
-    paint();
-  }
-
-  /* ---------- Hero ---------- */
-  function renderHero() {
-    document.title = SITE.title ? `${SITE.name} | ${SITE.title}` : SITE.name;
-
-    const brand = $("#brand");
-    brand.textContent = SITE.name;
-    brand.setAttribute("aria-label", `${SITE.name}, back to top`);
-
-    lettered($("#heroName"), SITE.name);
-    if (has(SITE.nameKana)) $("#heroKana").textContent = SITE.nameKana;
-    else $("#heroKana").remove();
-    $("#heroMeta").append(
-      ...[SITE.title, SITE.location]
-        .filter(has)
-        .flatMap((t, i) => [i ? h("span", { class: "vh" }, ", ") : null, h("span", { class: "tape", style: `--i:${i}` }, t)])
-        .filter(Boolean)
-    );
-    $("#heroTagline").textContent = typo(SITE.tagline || "");
-    $("#heroIntro").textContent = typo(SITE.intro || "");
-
-    $("#heroLinks").append(
-      ...visibleLinks(SITE.links).map((l, i) =>
-        h("a", { class: i === 0 ? "btn btn-ink" : "btn", ...linkAttrs(l.url) }, l.label, newTabNote(l.url))
-      )
-    );
-
-    // The numbers go on as price stickers. A "was" value prints as a markdown: old figure struck out.
-    $("#heroStats").append(
-      ...(SITE.highlights || []).map((s, i) =>
-        h(
-          "div",
-          { class: "sticker", style: `--i:${i}` },
-          h("dt", {}, s.label),
-          has(s.was)
-            ? h(
-                "dd",
-                {},
-                h("span", { class: "vh" }, "was "),
-                h("s", {}, nb(s.was)),
-                h("span", { class: "vh" }, ", now "),
-                " ",
-                h("b", {}, nb(s.value))
-              )
-            : h("dd", {}, nb(s.value))
-        )
-      )
-    );
-
-    // the cover drawing stands behind the name, at the right, aimed at the stickers
-    const gun = drawing("cover", "cover-art-piece");
-    if (gun) $(".cover-art").insertBefore(gun, $(".cover-art .hero-title"));
-    drawFocusLines();
-    fitName();
-    tallyStickers();
-  }
-
-  // The sticker figures tick up to their value as they land, a few frames at a time.
-  function tallyStickers() {
-    if (stillPlease.matches) return;
-    document.querySelectorAll("#heroStats .sticker").forEach((el, i) => {
-      const node = el.querySelector("dd b") || el.querySelector("dd");
-      const m = node.textContent.match(/^(\D*?)(\d[\d,]*)(.*)$/);
-      if (!m) return;
-      const target = parseInt(m[2].replace(/,/g, ""), 10);
-      if (!(target > 1)) return;
-      const print = (n) => m[1] + (m[2].includes(",") ? n.toLocaleString("en-US") : n) + m[3];
-      const frames = 10;
-      let f = 0;
-      node.textContent = print(0);
-      setTimeout(() => {
-        const id = setInterval(() => {
-          f += 1;
-          node.textContent = print(Math.round(target * (1 - Math.pow(1 - f / frames, 3))));
-          if (f >= frames) clearInterval(id);
-        }, 55);
-      }, 560 + i * 80);
+    window.matchMedia("(min-width: 900px)").addEventListener("change", (e) => {
+      if (e.matches && !menu.hidden) set(false);
     });
   }
 
-  // Manga focus lines: thin ink wedges running in from the page edge toward the name.
-  // Seeded, so the cover is the same drawing on every visit.
-  function drawFocusLines() {
-    const path = $("#focusLines path");
-    if (!path) return;
-    let seed = 20260311;
-    const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
-    const cx = 480;
-    const cy = 470;
-    const count = 210;
-    let d = "";
-    for (let i = 0; i < count; i++) {
-      const a = ((i + rnd() * 0.85) / count) * Math.PI * 2;
-      const half = 0.001 + rnd() * rnd() * 0.0085;
-      const reach = 0.72 + rnd() * 0.85; // how close the tip gets: 1 is the edge of the clear zone
-      const far = 1700;
-      // the clear zone is shallower above the name than below it, so lines frame the title all round
-      const tipX = cx + Math.cos(a) * 560 * reach;
-      const tipY = cy + Math.sin(a) * 400 * reach;
-      const p = (ang) => `${(cx + Math.cos(ang) * far).toFixed(1)} ${(cy + Math.sin(ang) * far).toFixed(1)}`;
-      d += `M${p(a - half)}L${p(a + half)}L${tipX.toFixed(1)} ${tipY.toFixed(1)}Z`;
-    }
-    path.setAttribute("d", d);
-  }
-
-  // Size the name to the width of the cover. The ratios are measured from the real font, so a
-  // different name in content.js still fills the line.
-  function fitName() {
-    if (!document.fonts || !document.fonts.load) return;
-    const shown = (text) =>
-      alternates(text)
-        .map((p) => (p.alt ? p.ch.toLowerCase() : p.ch.toUpperCase()))
-        .join("");
-    document.fonts.load('100px "Dracutaz"').then(
-      () => {
-        const ctx = document.createElement("canvas").getContext("2d");
-        if (!ctx) return;
-        ctx.font = '100px "Dracutaz"';
-        const full = shown(SITE.name);
-        const line = ctx.measureText(full).width / 100;
-        const word = Math.max(...full.split(/\s+/).map((w) => ctx.measureText(w).width)) / 100;
-        if (!(line > 0)) return;
-        // set on the page, not the heading: the name is lettered again across the foot of the page
-        root.style.setProperty("--fit-line", (line * 1.05).toFixed(3));
-        root.style.setProperty("--fit-word", (word * 1.08).toFixed(3));
-      },
-      () => {}
-    );
-  }
-
-  /* ---------- About ---------- */
-  function renderAbout() {
-    const [lead, ...more] = (SITE.about || {}).paragraphs || [];
-    const g = SITE.goals || {};
-    const hasGoals = (g.paragraphs || []).length || (g.points || []).length;
-    $("#aboutBody").append(
-      ...[
-        has(lead) ? h("p", { class: "about-lead" }, lead) : null,
-        more.length ? h("div", { class: "about-more" }, more.map((p) => h("p", {}, p))) : null,
-        hasGoals
-          ? h(
-              "aside",
-              { class: "goals", "aria-labelledby": "goalsTitle" },
-              h("h3", { class: "hand", id: "goalsTitle" }, g.heading || "What I am looking for"),
-              (g.paragraphs || []).map((p) => h("p", {}, p)),
-              (g.points || []).length ? h("ul", {}, g.points.map((p) => h("li", {}, p))) : null
-            )
-          : null,
-      ].filter(Boolean)
-    );
-  }
-
-  /* ---------- Experience and education: a ledger, one ruled row per entry ---------- */
-  const pointList = (points) =>
-    (points || []).length ? h("ul", { class: "points" }, points.map((pt) => h("li", {}, pt))) : null;
-
-  const ledgerRow = (x, heading, extra) =>
-    h(
-      "article",
-      { class: "role" },
-      h("p", { class: "when" }, range(x)),
-      h("div", { class: "role-body" }, h(heading, {}, x.role), h("p", { class: "org" }, x.org), pointList(x.points), extra)
-    );
-
-  function renderExperience() {
-    const items = (SITE.resume || {}).experience || [];
-    $("#experienceBody").append(
-      ...items.map((x, i) =>
-        // a click, lettered the way a manga panel would: the newest role is the one-click work
-        ledgerRow(x, "h3", i === 0 ? h("p", { class: "sfx sfx-role", lang: "ja", "aria-hidden": "true" }, "カチッ") : null)
-      )
-    );
-  }
-
-  /* ---------- Projects: an index of titles ---------- */
-  function renderProjects() {
-    const wrap = $("#projectGroups");
-    for (const group of SITE.projectGroups || []) {
-      const items = (SITE.projects || []).filter((p) => p.group === group.id);
-      if (!items.length) continue;
-      wrap.append(
-        h(
-          "div",
-          { class: "shelf-group" },
-          h(
-            "div",
-            { class: "shelf-head" },
-            h("h3", { class: "hand" }, group.title),
-            has(group.note) ? h("p", { class: "group-note" }, group.note) : null
-          ),
-          h("div", { class: "rows" }, items.map(projectRow))
-        )
-      );
-    }
-  }
-
-  const techTags = (tags) =>
-    (tags || []).length ? h("ul", { class: "tags", translate: "no" }, tags.map((t) => h("li", {}, t))) : null;
-
-  function projectRow(p) {
-    const open = lettered(h("button", { type: "button", "aria-haspopup": "dialog", onclick: () => openProject(p) }), p.title);
-    const pic = has(p.image)
-      ? h("div", { class: "row-art" }, h("img", { src: p.image, alt: "", decoding: "async", loading: "lazy" }))
-      : drawing(p.id, "row-art");
-    return h(
-      "article",
-      { class: pic ? "row has-art" : "row" },
-      pic,
-      h("h4", { class: "row-title" }, open),
-      h("div", { class: "row-about" }, h("p", {}, p.summary), techTags(p.tags)),
-      h(
-        "p",
-        { class: "row-meta" },
-        h("span", {}, p.year),
-        statusStamp(p.status),
-        h("span", { class: "row-cue", "aria-hidden": "true" }, "Open the write-up")
-      )
-    );
-  }
-
-  /* ---------- Reader: the project write-up ---------- */
-  let openId = null;
-  function openProject(p) {
-    const modal = $("#projectModal");
-    openId = p.id;
-    const links = visibleLinks(p.links);
-    $("#modalBody").replaceChildren(
-      ...[
-        h("p", { class: "reader-meta" }, h("span", {}, p.year), statusStamp(p.status)),
-        lettered(h("h2", { id: "modalTitle" }), p.title),
-        h("p", { class: "reader-lede" }, p.summary),
-        has(p.image)
-          ? h("img", { class: "reader-img", src: p.image, alt: p.imageAlt || `${p.title} screenshot`, decoding: "async" })
-          : drawing(p.id, "reader-art"),
-        techTags(p.tags),
-        (p.process || []).length
-          ? h(
-              "ol",
-              { class: "steps" },
-              p.process.map((s, n) => h("li", { style: `--n:${n}` }, h("h3", {}, s.title), h("p", {}, s.text)))
-            )
-          : null,
-        links.length
-          ? h(
-              "div",
-              { class: "links" },
-              links.map((l) => h("a", { class: "btn", ...linkAttrs(l.url) }, l.label, newTabNote(l.url)))
-            )
-          : null,
-      ].filter(Boolean)
-    );
-    if (location.hash !== `#project/${p.id}`) history.replaceState(null, "", `#project/${p.id}`);
-    if (!modal.open) modal.showModal();
-    modal.scrollTop = 0;
-  }
-
-  // Each write-up has a link of its own: site.com/#project/pricing-tool opens it directly.
-  function projectInHash() {
-    const m = location.hash.match(/^#project\/(.+)$/);
-    if (!m) return null;
-    let id = m[1];
-    try {
-      id = decodeURIComponent(id);
-    } catch (e) {}
-    return (SITE.projects || []).find((x) => x.id === id) || null;
-  }
-
-  function initReader() {
-    const modal = $("#projectModal");
-    $("#modalClose").addEventListener("click", () => modal.close());
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) modal.close();
-    });
-    modal.addEventListener("close", () => {
-      // the close event arrives a beat late: only clear the link if it still points at the write-up
-      // that just closed, not at one the visitor has moved on to since
-      if (!modal.open && location.hash === `#project/${openId}`) history.replaceState(null, "", "#projects");
-    });
-    const syncToHash = () => {
-      const p = projectInHash();
-      if (p) openProject(p);
-      else if (modal.open) modal.close();
+  /* ---------- Day and night pages ---------- */
+  function bindTheme() {
+    const btn = $("#themeToggle");
+    const label = $("#themeLabel");
+    const dark = window.matchMedia("(prefers-color-scheme: dark)");
+    const isNight = () => (root.dataset.theme ? root.dataset.theme === "night" : dark.matches);
+    const sync = () => {
+      const night = isNight();
+      btn.setAttribute("aria-pressed", String(night));
+      label.textContent = "Night page";
+      btn.title = night ? "Switch to the day page" : "Switch to the night page";
+      const meta = $$('meta[name="theme-color"]');
+      meta.forEach((m) => m.setAttribute("content", night ? "#000000" : "#ffffff"));
+      meta.forEach((m) => m.removeAttribute("media"));
     };
-    window.addEventListener("hashchange", syncToHash);
-    if (projectInHash()) syncToHash();
+    btn.addEventListener("click", () => {
+      const next = isNight() ? "day" : "night";
+      const apply = () => {
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem("page", next);
+        } catch (e) {}
+        sync();
+      };
+      const r = btn.getBoundingClientRect();
+      root.style.setProperty("--fx", `${r.left + r.width / 2}px`);
+      root.style.setProperty("--fy", `${r.top + r.height / 2}px`);
+      if (document.startViewTransition && !reduceMotion.matches) document.startViewTransition(apply);
+      else apply();
+    });
+    dark.addEventListener("change", sync);
+    sync();
   }
 
-  /* ---------- Skills and education ---------- */
-  function renderSkills() {
-    $("#skillsBody").append(
-      ...Object.entries(SITE.skills || {}).map(([group, items]) =>
-        h(
-          "div",
-          { class: "kit-group" },
-          h("h3", { class: "hand" }, group),
-          h("ul", { class: "kit-list" }, items.map((s) => h("li", {}, s)))
-        )
-      )
-    );
-
-    const education = (SITE.resume || {}).education || [];
-    if (education.length) {
-      $("#educationBody").append(
-        h("h3", { class: "hand" }, "Education"),
-        h("div", { class: "edu" }, education.map((x) => ledgerRow(x, "h4")))
-      );
-    } else {
-      $("#educationBody").remove();
-    }
-  }
-
-  /* ---------- Off the clock: a shelf of spines, and the book lying open beside it ----------
-     The first book is open from the start. Choosing another turns the page: forward lifts the right-hand
-     page over to the left, back lifts the left-hand page over to the right. */
-  function renderOffClock() {
-    const data = SITE.offClock || {};
-    const books = (data.books || []).filter((b) => has(b.spine));
-    const section = $("#offclock");
-    const navLink = document.querySelector('.sections a[href="#offclock"]');
-    if (!books.length) {
-      section.remove();
-      if (navLink) navLink.remove();
+  /* ---------- Panels are inked in the first time they are read ---------- */
+  function bindReveal() {
+    const items = $$("[data-reveal]");
+    if (!("IntersectionObserver" in window) || reduceMotion.matches) {
+      items.forEach((el) => el.classList.add("is-in"));
       return;
     }
-    section.hidden = false;
-    lettered($("#h-offclock"), data.heading || "Off the clock");
-    if (has(data.note)) $("#offclockNote").textContent = typo(data.note);
-    else $("#offclockNote").remove();
-
-    const rack = $("#rack");
-    const desk = $("#desk");
-    const two = (n) => String(n).padStart(2, "0");
-    const cloth = (b) => `ink-${b.color || "accent"}`;
-    // a longer word needs a taller spine, which also keeps the row from looking like a fence
-    const spineHeight = (word) => Math.min(272, Math.max(184, 112 + [...word].length * 16));
-    // plain, unlettered books between the real ones, so the shelf reads as a shelf
-    const filler = (cls) => h("span", { class: `filler ${cls}`, "aria-hidden": "true" });
-    const FILLERS = [["thin"], ["short"], ["thin tall"]];
-
-    const spines = books.map((b, i) =>
-      h(
-        "button",
-        {
-          class: `book ${cloth(b)}`,
-          type: "button",
-          style: `--h:${spineHeight(b.spine)}px`,
-          "aria-controls": "desk",
-        },
-        h(
-          "span",
-          { class: "book-spine" },
-          h("span", { class: "book-no", "aria-hidden": "true" }, two(i + 1)),
-          h("span", { class: "book-title" }, b.spine),
-          h("span", { class: "book-mark", "aria-hidden": "true" })
-        )
-      )
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add("is-in");
+            io.unobserve(en.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.12 }
     );
-    rack.append(
-      ...spines.flatMap((el, i) => [el, ...(i < spines.length - 1 ? FILLERS[i % FILLERS.length] : []).map(filler)]),
-      h("span", { class: "bookend", "aria-hidden": "true" })
-    );
-
-    const leftPage = (b, i) =>
-      h(
-        "div",
-        { class: `pg pg-l ${cloth(b)}` },
-        h("p", { class: "pg-band" }, h("span", { class: "pg-vol" }, `Vol. ${two(i + 1)}`), brush(b.spine)),
-        drawing(b.id, "pg-art"),
-        h("p", { class: "pg-folio", "aria-hidden": "true" }, `${two(i + 1)} / ${two(books.length)}`)
-      );
-
-    const rightPage = (b, i) =>
-      h(
-        "div",
-        { class: "pg pg-r" },
-        h("h3", { class: "hand", id: `bookTitle-${i}` }, b.heading || b.spine),
-        has(b.text) ? h("p", { class: "pg-text" }, b.text) : null,
-        (b.list || []).length
-          ? h(
-              "ol",
-              { class: "pg-list" },
-              b.list.map((t) =>
-                h(
-                  "li",
-                  {},
-                  typeof t === "string"
-                    ? h("div", {}, t)
-                    : h("div", {}, h("b", {}, t.title), has(t.note) ? h("p", {}, t.note) : null)
-                )
-              )
-            )
-          : null,
-        b.link && has(b.link.url)
-          ? h("p", {}, h("a", { class: "pg-link", ...linkAttrs(b.link.url) }, b.link.label, newTabNote(b.link.url)))
-          : null
-      );
-
-    const cover = (i) =>
-      h(
-        "div",
-        { class: `pg cover ${cloth(books[i])}` },
-        h("p", { class: "cover-vol" }, `Vol. ${two(i + 1)}`),
-        h("p", { class: "cover-title" }, brush(books[i].spine)),
-        h("span", { class: "book-mark" })
-      );
-    const blank = () => h("div", { class: "pg pg-void" });
-
-    const openBook = (i) =>
-      h("article", { class: "spread", "aria-labelledby": `bookTitle-${i}` }, leftPage(books[i], i), rightPage(books[i], i));
-    // a shut book: only its front cover, lying where the right-hand page would be
-    const shutBook = (i) => h("div", { class: "spread", "aria-hidden": "true" }, blank(), cover(i));
-
-    // A copy of a page for the animation: no ids outside its drawing, nothing to focus.
-    const copy = (page) => {
-      const c = page.cloneNode(true);
-      c.querySelectorAll("[id]").forEach((el) => !el.closest("svg") && el.removeAttribute("id"));
-      c.inert = true;
-      return c;
-    };
-    // the cover as one sheet: the cover on one face, the first page on the other
-    const leaf = (side, face, reverse) => {
-      const el = h(
-        "div",
-        { class: `leaf ${side}`, "aria-hidden": "true" },
-        h("div", { class: "leaf-face" }, face),
-        h("div", { class: "leaf-face leaf-reverse" }, reverse)
-      );
-      el.inert = true;
-      return el;
-    };
-
-    // Everything moves in hard frames, like the rest of the page.
-    const run = (el, keyframes, ms, n) =>
-      el.animate(keyframes, { duration: ms, easing: `steps(${n}, jump-none)`, fill: "forwards" }).finished.then(
-        () => true,
-        () => false
-      );
-    const CENTRE = "-25% 0"; // a shut book sits in the middle of the desk, not on the right
-    const SHELF = "-62% 0"; // and goes back toward the shelf, which stands to its left
-
-    const markOpen = (i) => spines.forEach((el, n) => el.setAttribute("aria-current", n === i ? "true" : "false"));
-    let current = -1;
-    let moving = 0; // counts sequences; a newer one stops an older one where it is
-
-    // Open a shut book: the cover swings over to the left while the book slides from the middle.
-    async function open(i, token) {
-      const book = openBook(i);
-      const left = book.children[0];
-      const sheet = leaf("fwd", cover(i), copy(left));
-      book.replaceChild(blank(), left);
-      book.append(sheet);
-      book.style.translate = CENTRE;
-      desk.replaceChildren(book);
-      await Promise.all([
-        run(sheet, [{ transform: "rotateY(0)" }, { transform: "rotateY(-180deg)" }], 640, 10),
-        run(book, [{ translate: CENTRE }, { translate: "0 0" }], 640, 10),
-      ]);
-      if (token !== moving) return;
-      book.getAnimations().forEach((a) => a.cancel());
-      book.style.translate = "";
-      book.replaceChild(left, book.children[0]);
-      sheet.remove();
-    }
-
-    // Close the open book: the left-hand page and the cover swing over onto the right.
-    async function close(i, token) {
-      const book = desk.querySelector(".spread");
-      const left = book.children[0];
-      const sheet = leaf("back", copy(left), cover(i));
-      book.replaceChild(blank(), left);
-      book.append(sheet);
-      await Promise.all([
-        run(sheet, [{ transform: "rotateY(0)" }, { transform: "rotateY(180deg)" }], 460, 8),
-        run(book, [{ translate: "0 0" }, { translate: CENTRE }], 460, 8),
-      ]);
-      if (token !== moving) return false;
-      const shut = shutBook(i);
-      shut.style.translate = CENTRE;
-      desk.replaceChildren(shut);
-      return true;
-    }
-
-    // Put the shut book back toward the shelf, then take the next one down from it.
-    async function shelve(token) {
-      const shut = desk.querySelector(".spread");
-      await run(shut, [{ translate: CENTRE, scale: 1, opacity: 1 }, { translate: SHELF, scale: 0.72, opacity: 0 }], 300, 5);
-      return token === moving;
-    }
-    async function takeDown(i, token) {
-      const shut = shutBook(i);
-      desk.replaceChildren(shut);
-      await run(shut, [{ translate: SHELF, scale: 0.72, opacity: 0 }, { translate: CENTRE, scale: 1, opacity: 1 }], 320, 5);
-      return token === moving;
-    }
-
-    // Choosing another book: shut the open one, put it back, take the new one down and open it.
-    async function choose(i) {
-      if (i === current || !books[i]) return;
-      const from = current;
-      current = i;
-      const token = ++moving;
-      const busy = desk.getAnimations({ subtree: true }).some((a) => a.playState === "running");
-      // no room, no motion, or another change still under way: go straight to the book
-      if (stillPlease.matches || desk.clientWidth < 640 || busy || from < 0) {
-        desk.getAnimations({ subtree: true }).forEach((a) => a.cancel());
-        markOpen(i);
-        const book = openBook(i);
-        desk.replaceChildren(book);
-        if (from >= 0 && !stillPlease.matches) book.classList.add("cut");
-        return;
-      }
-      if (!desk.querySelector(".spread > .pg-l")) {
-        // the first book was still shut: nothing to close
-        spines[from].setAttribute("aria-current", "false");
-        if (!(await shelve(token))) return;
-      } else {
-        if (!(await close(from, token))) return;
-        spines[from].setAttribute("aria-current", "false"); // its spine drops back into the row
-        if (!(await shelve(token))) return;
-      }
-      markOpen(i); // and the new one comes up out of the row
-      if (!(await takeDown(i, token))) return;
-      await open(i, token);
-    }
-
-    spines.forEach((el, i) => el.addEventListener("click", () => choose(i)));
-
-    // The first book starts shut in the middle of the desk, and opens the first time it is in view.
-    current = 0;
-    markOpen(0);
-    const canOpen = !stillPlease.matches && "IntersectionObserver" in window && desk.clientWidth >= 640;
-    if (canOpen) {
-      const shut = shutBook(0);
-      shut.style.translate = CENTRE;
-      desk.append(shut);
-      const io = new IntersectionObserver(
-        (entries) => {
-          if (!entries.some((e) => e.isIntersecting)) return;
-          io.disconnect();
-          if (current === 0 && desk.firstChild === shut) open(0, moving);
-        },
-        { threshold: 0.45 }
-      );
-      io.observe(desk);
-    } else {
-      desk.append(openBook(0));
-    }
-  }
-
-  /* ---------- Footer ---------- */
-  function renderFooter() {
-    $("#footerText").textContent = `© ${new Date().getFullYear()} ${SITE.name}`;
-    $("#footerLinks").append(
-      ...visibleLinks(SITE.links).map((l) => h("a", linkAttrs(l.url), l.label, newTabNote(l.url)))
-    );
-    $("#footerName").append(brush(SITE.name));
-  }
-
-  /* ---------- A drawing under each margin title ---------- */
-  function drawChapters() {
-    document.querySelectorAll("main > section.page").forEach((section) => {
-      const chapter = section.querySelector(".side > .chapter");
-      const art = chapter && drawing(section.id, "chapter-art");
-      if (art) chapter.append(art);
+    items.forEach((el) => io.observe(el));
+    // anything already above the fold when the page loads deep is shown at once
+    requestAnimationFrame(() => {
+      items.forEach((el) => {
+        if (el.getBoundingClientRect().bottom < 0) el.classList.add("is-in");
+      });
     });
   }
 
-  /* ---------- Section titles are stamped down as you reach them ----------
-     Only armed when motion is welcome and the browser can observe; otherwise nothing is ever hidden. */
-  function initReveals() {
-    if (!("IntersectionObserver" in window) || stillPlease.matches) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          e.target.classList.add("in");
-          io.unobserve(e.target);
-        }
-      },
-      { rootMargin: "0px 0px -9% 0px" }
-    );
-    document.querySelectorAll(".chapter h2").forEach((el) => {
-      el.classList.add("rv", "rv-stamp");
-      io.observe(el);
-    });
+  /* ---------- Start ---------- */
+  function start() {
+    renderCover();
+    renderHeads();
+    renderChapters();
+    renderStory();
+    renderFile();
+    renderExtras();
+    renderEnd();
+    bindReader();
+    bindBar();
+    bindMenu();
+    bindTheme();
+    bindReveal();
+
+    // The page was built after the browser looked for the anchor, so look again.
+    const target = location.hash && !/^#(chapter|project)\//.test(location.hash) ? document.getElementById(location.hash.slice(1)) : null;
+    if (target) target.scrollIntoView();
+    route();
   }
 
-  /* ---------- Reading progress: red ink along the foot of the top bar ---------- */
-  function initProgress() {
-    const bar = $(".top");
-    let queued = false;
-    const set = () => {
-      queued = false;
-      const max = root.scrollHeight - innerHeight;
-      bar.style.setProperty("--progress", max > 0 ? Math.min(1, scrollY / max).toFixed(4) : "0");
-    };
-    const ask = () => {
-      if (!queued) {
-        queued = true;
-        requestAnimationFrame(set);
-      }
-    };
-    addEventListener("scroll", ask, { passive: true });
-    addEventListener("resize", ask);
-    set();
+  try {
+    start();
+  } finally {
+    const ready = () => root.classList.add("ready");
+    if (document.fonts && document.fonts.ready) {
+      Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 700))]).then(ready);
+    } else ready();
   }
-
-  /* ---------- Section marker in the top bar ---------- */
-  function initSectionMarker() {
-    if (!("IntersectionObserver" in window)) return;
-    const links = [...document.querySelectorAll(".sections a")];
-    const byId = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          links.forEach((a) => a.removeAttribute("aria-current"));
-          const link = byId.get(e.target.id);
-          if (link) link.setAttribute("aria-current", "location");
-        }
-      },
-      { rootMargin: "-45% 0px -54% 0px" }
-    );
-    document.querySelectorAll("main > section[id]").forEach((s) => io.observe(s));
-  }
-
-  initPalettes();
-  renderHero();
-  renderAbout();
-  renderExperience();
-  renderProjects();
-  renderSkills();
-  renderOffClock();
-  renderFooter();
-  drawChapters();
-  initReader();
-  initSectionMarker();
-  initReveals();
-  initProgress();
-
 })();
