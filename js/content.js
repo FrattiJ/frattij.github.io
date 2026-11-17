@@ -5,6 +5,9 @@
  *
  *  Everything on the site is generated from the objects below.
  *  Copy an existing entry, paste it, change the values. Save, refresh, done.
+ *
+ *  The site reads like a manga volume: projects are chapters told panel by panel,
+ *  the career is a four-panel strip, and the rest is a character file and bonus pages.
  */
 
 const SITE = {
@@ -33,6 +36,17 @@ const SITE = {
     { value: "1 min", was: "6 hrs", label: "Chain cost file, after automation" },
     { value: "1,800", label: "SKUs validated per supplier price book" },
   ],
+
+  /* ---------- Section headings and the line under each ---------- */
+  sections: {
+    work: { heading: "The work", note: "Every project is a chapter, told panel by panel. Open one to read it." },
+    story: { heading: "The story so far", note: "Six years in four panels, from store shelves to price books." },
+    profile: { heading: "Character file", note: "Who I am, what I use, and where I trained." },
+    contact: {
+      heading: "To be continued",
+      note: "Looking for someone in pricing, cost or revenue analytics? I would like to hear from you.",
+    },
+  },
 
   /* ---------- About ---------- */
   about: {
@@ -67,6 +81,8 @@ const SITE = {
      group: "work" | "personal" (the order and titles are set in projectGroups)
      The "process" list is the write-up shown when someone opens a project.
      status: "shipped" (shown as "In use") | "active" | "planned"
+     hook: one line under the chapter title. sfx: a sound effect lettered on the chapter's title page,
+     with `say` as its small English gloss, the way translated manga prints them (optional).
      image: optional screenshot path, e.g. "assets/projects/hobbylog.png" (shown 16:9), with imageAlt to describe it
   */
   projectGroups: [
@@ -76,6 +92,8 @@ const SITE = {
   projects: [
     {
       id: "pricing-tool",
+      hook: "The monthly pricing run, packaged as one app",
+      sfx: { kana: "カタカタ", say: "clack clack" },
       title: "Pricing Tool",
       group: "work",
       status: "shipped",
@@ -105,6 +123,8 @@ const SITE = {
     },
     {
       id: "alteryx-workflows",
+      hook: "Six hours of reconciliation became one click",
+      sfx: { kana: "カチッ", say: "click" },
       title: "Alteryx Pricing Workflows",
       group: "work",
       status: "shipped",
@@ -130,6 +150,8 @@ const SITE = {
     },
     {
       id: "hobbylog",
+      hook: "Everything I play, watch, read and lift, in one place",
+      sfx: { kana: "ピコン", say: "ping" },
       title: "Hobbylog",
       group: "personal",
       status: "shipped",
@@ -166,6 +188,8 @@ const SITE = {
     },
     {
       id: "family-newsletter",
+      hook: "Family news a grandparent can post from a phone",
+      sfx: { kana: "パサッ", say: "fwap" },
       title: "The Family Newsletter",
       group: "personal",
       status: "shipped",
@@ -195,6 +219,8 @@ const SITE = {
     },
     {
       id: "dead-in-the-water",
+      hook: "Two rulebooks, one character sheet",
+      sfx: { kana: "コロコロ", say: "clatter" },
       title: "Dead in the Water: Character Builder",
       group: "personal",
       status: "shipped",
@@ -227,15 +253,15 @@ const SITE = {
     },
   ],
 
-  /* ---------- Off the clock: a shelf of books, one per interest ----------
-     spine: the word on the spine (keep it short). color: "accent" (the palette's spot colour) | "ink" | "paper" | "grey".
-     Opening a book shows heading, then text, then list. text, list and link are each optional.
+  /* ---------- Off the clock: bonus pages, one per interest ----------
+     spine: the short title lettered on the page. color: "accent" (the spot colour) | "ink" | "paper" | "grey".
+     Each page shows heading, then text, then list. text, list and link are each optional.
      A list line is either "Title" or { title: "Title", note: "a line about it" }.
-     link.url can point at a project write-up, e.g. "#project/dead-in-the-water".
+     link.url can point at a project chapter, e.g. "#chapter/dead-in-the-water".
   */
   offClock: {
     heading: "Off the clock",
-    note: "Pull a book off the shelf.",
+    note: "Bonus pages: what I read, draw and run when I am not pricing.",
     books: [
       {
         id: "manga",
@@ -291,7 +317,7 @@ const SITE = {
           "six hours, and a revenge plot against the first mate who mutinied and took the ship. It runs " +
           "on a homebrew ruleset layered over D&D, and building characters by hand from two rulebooks " +
           "was the slowest part of the night, so I wrote a character builder for it.",
-        link: { label: "Open the character builder write-up", url: "#project/dead-in-the-water" },
+        link: { label: "Read the character builder chapter", url: "#chapter/dead-in-the-water" },
       },
     ],
   },
@@ -304,7 +330,9 @@ const SITE = {
     Systems: ["Salesforce", "Proof CRM", "Git"],
   },
 
-  /* ---------- Resume ---------- */
+  /* ---------- Resume ----------
+     The four-panel strip reads the experience oldest first and ends on the first education entry.
+     figure: the big number lettered in that panel (add `was` to print it as a markdown). */
   resume: {
     experience: [
       {
@@ -312,6 +340,7 @@ const SITE = {
         org: "Reyes Beverage Group, Orlando, FL",
         start: "Mar 2026",
         end: "Present",
+        figure: { value: "1 min", was: "6 hrs", label: "Chain cost file, after the workflow I built" },
         points: [
           "Built an Alteryx, SQL and Snowflake reconciliation workflow that compares the pricing master against customer price files and outputs a corrected cost file, cutting a six-hour, 400-SKU manual process to a one-click run under a minute.",
           "Built a supplier price book validation tool that reconciles 1,800-SKU price books against system records and generates the ~150 upload forms each cycle needs, compressing a multi-week process to about eight hours.",
@@ -324,6 +353,7 @@ const SITE = {
         org: "Southern Glazer's Wine & Spirits, Orlando, FL",
         start: "May 2025",
         end: "Mar 2026",
+        figure: { value: "12", label: "High-volume Walmart and Target locations" },
         points: [
           "Owned performance analysis and execution for 12 high-volume Walmart and Target locations.",
           "Analyzed sales, inventory and execution data to forecast demand and reduce out-of-stock risk.",
@@ -335,6 +365,7 @@ const SITE = {
         org: "Southern Glazer's Wine & Spirits, Orlando, FL",
         start: "Feb 2020",
         end: "May 2025",
+        figure: { value: "56", label: "Walgreens and CVS locations" },
         points: [
           "Managed analytics, reporting and operational planning for 56 Walgreens and CVS locations.",
         ],
@@ -346,6 +377,7 @@ const SITE = {
         org: "University of Central Florida",
         start: "",
         end: "Expected Aug 2027",
+        figure: { value: "2027", label: "MBA in Business Analytics, finishing in August" },
         points: [
           "Coursework: Business Intelligence, Data Visualization, Business Analytics with Python and R, Applied Business Research Tools, Managerial Accounting Analysis.",
         ],
