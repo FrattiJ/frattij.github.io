@@ -2,189 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Jacob Fratti | Pricing and Analytics</title>
-    <meta name="description" content="Jacob Fratti builds the automation that replaces manual pricing work. Projects told as manga chapters, six years of beverage distribution, and what comes next." />
+    <link rel="canonical" href="https://fratti-os.vercel.app/" />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content="0; url=https://fratti-os.vercel.app/" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Jacob Fratti | Pricing and Analytics" />
     <meta property="og:description" content="I build the automation that replaces manual pricing work, and I measure what it saves." />
-    <meta property="og:url" content="https://frattij.github.io/" />
-    <meta property="og:image" content="https://frattij.github.io/assets/share.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Jacob Fratti lettered as a manga title in black and yellow over focus lines, with the katakana reading of the name set vertically." />
+    <meta property="og:url" content="https://fratti-os.vercel.app/" />
+    <meta property="og:image" content="https://fratti-os.vercel.app/portfolio/share.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="preload" href="assets/fonts/DelaGothicOne.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="assets/fonts/MPLUS1-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="css/style.css" />
     <script>
-      // Before first paint: apply a saved day or night page, and arm the opening sequence.
-      (function () {
-        var root = document.documentElement;
-        try {
-          var t = localStorage.getItem("page");
-          if (t === "day" || t === "night") root.dataset.theme = t;
-        } catch (e) {}
-        root.classList.add("js");
-      })();
+      // Keep the section or chapter someone linked to, e.g. #chapter/hobbylog.
+      location.replace("https://fratti-os.vercel.app/" + location.hash);
     </script>
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-content: center; padding: 16px; font: 16px/1.5 system-ui, sans-serif; background: #fff; color: #000; text-align: center; }
+      a { color: inherit; font-weight: 700; }
+      @media (prefers-color-scheme: dark) { body { background: #000; color: #f3f3ef; } }
+    </style>
   </head>
   <body>
-    <a class="skip" href="#main">Skip to content</a>
-
-    <header class="bar" id="bar">
-      <div class="bar-in">
-        <a class="bar-brand" href="#top" translate="no">Jacob Fratti</a>
-        <nav class="bar-nav" aria-label="Sections">
-          <a href="#work">Work</a>
-          <a href="#story">Story</a>
-          <a href="#profile">Profile</a>
-          <a href="#extras">Extras</a>
-          <a href="#contact">Contact</a>
-        </nav>
-        <button class="icon-btn" id="themeToggle" type="button" aria-pressed="false">
-          <span class="vh" id="themeLabel">Night page</span>
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-            <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.5" />
-            <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" />
-          </svg>
-        </button>
-        <button class="icon-btn bar-menu" id="menuToggle" type="button" aria-expanded="false" aria-controls="contents">
-          <span class="vh">Contents</span>
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-            <path d="M3 6h18M3 12h18M3 18h12" fill="none" stroke="currentColor" stroke-width="3" />
-          </svg>
-        </button>
-      </div>
-      <div class="bar-progress" aria-hidden="true"><span id="progress"></span></div>
-    </header>
-
-    <nav class="contents" id="contents" aria-label="Contents" hidden>
-      <p class="contents-title" aria-hidden="true">Contents</p>
-      <ol>
-        <li><a href="#work"><span>The work</span></a></li>
-        <li><a href="#story"><span>The story so far</span></a></li>
-        <li><a href="#profile"><span>Character file</span></a></li>
-        <li><a href="#extras"><span>Off the clock</span></a></li>
-        <li><a href="#contact"><span>To be continued</span></a></li>
-      </ol>
-    </nav>
-
-    <main id="main">
-      <!-- The cover: a splash page in four panels -->
-      <section class="cover page" id="top" aria-labelledby="coverName">
-        <div class="cover-grid">
-          <div class="panel splash" id="splash">
-            <svg class="focus" id="focus" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false"></svg>
-            <p class="splash-kana" id="coverKana" lang="ja" aria-hidden="true"></p>
-            <p class="sfx splash-sfx" aria-hidden="true"><span lang="ja">ドン</span><small>don</small></p>
-            <h1 class="splash-name" id="coverName" translate="no"><span>Jacob</span> <span>Fratti</span></h1>
-            <p class="splash-tags">
-              <span class="caption" id="coverTitle">Pricing and Analytics</span>
-              <span class="caption caption-spot" id="coverPlace">Orlando, FL</span>
-            </p>
-          </div>
-
-          <div class="panel says">
-            <div class="halftone" aria-hidden="true"></div>
-            <p class="bubble" id="coverTagline">I build the automation that replaces manual pricing work, and I measure what it saves.</p>
-          </div>
-
-          <div class="panel narrate">
-            <p class="narration" id="coverIntro"></p>
-            <div class="cta" id="coverLinks">
-              <a class="btn btn-ink" href="#work">Read the work</a>
-            </div>
-          </div>
-
-          <div class="panel tags-panel">
-            <dl class="stickers" id="coverStats"></dl>
-          </div>
-        </div>
-      </section>
-
-      <section class="page" id="work" aria-labelledby="h-work">
-        <header class="page-head">
-          <h2 id="h-work">The work</h2>
-          <p id="workNote"></p>
-        </header>
-        <div id="chapters"></div>
-      </section>
-
-      <section class="page" id="story" aria-labelledby="h-story">
-        <header class="page-head">
-          <h2 id="h-story">The story so far</h2>
-          <p id="storyNote"></p>
-        </header>
-        <ol class="yonkoma" id="yonkoma"></ol>
-      </section>
-
-      <section class="page" id="profile" aria-labelledby="h-profile">
-        <header class="page-head">
-          <h2 id="h-profile">Character file</h2>
-          <p id="profileNote"></p>
-        </header>
-        <div class="file" id="file"></div>
-      </section>
-
-      <section class="page" id="extras" aria-labelledby="h-extras">
-        <header class="page-head">
-          <h2 id="h-extras">Off the clock</h2>
-          <p id="extrasNote"></p>
-        </header>
-        <div class="omake" id="omake"></div>
-      </section>
-
-      <section class="page finale" id="contact" aria-labelledby="h-contact">
-        <div class="panel night end">
-          <svg class="focus" id="focusEnd" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false"></svg>
-          <p class="tsuzuku" lang="ja" aria-hidden="true">つづく</p>
-          <div class="end-in">
-            <h2 id="h-contact">To be continued</h2>
-            <p class="bubble bubble-flat" id="contactNote"></p>
-            <div class="cta" id="contactLinks"></div>
-          </div>
-        </div>
-      </section>
-
-      <noscript>
-        <p class="noscript">This page is lettered in the browser. Turn on JavaScript to read the chapters.</p>
-      </noscript>
-    </main>
-
-    <footer class="colophon">
-      <p id="footerText"></p>
-      <p>Lettering: Dela Gothic One. Text: M PLUS 1. Both under the SIL Open Font License.</p>
-      <a href="#top">Back to the cover</a>
-    </footer>
-
-    <dialog class="reader" id="reader" aria-labelledby="readerTitle">
-      <div class="reader-bar">
-        <p class="reader-where" id="readerWhere"></p>
-        <div class="reader-nav">
-          <button class="icon-btn" id="readerPrev" type="button">
-            <span class="vh">Previous chapter</span>
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="3" /></svg>
-          </button>
-          <button class="icon-btn" id="readerNext" type="button">
-            <span class="vh">Next chapter</span>
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3" /></svg>
-          </button>
-          <button class="icon-btn" id="readerClose" type="button">
-            <span class="vh">Close chapter</span>
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="3" /></svg>
-          </button>
-        </div>
-      </div>
-      <article class="reader-page" id="readerBody"></article>
-    </dialog>
-
-    <script src="js/content.js"></script>
-    <script src="js/art.js"></script>
-    <script src="js/main.js"></script>
+    <p>This site has moved to <a href="https://fratti-os.vercel.app/">fratti-os.vercel.app</a>.</p>
   </body>
 </html>

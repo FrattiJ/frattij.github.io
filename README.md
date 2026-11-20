@@ -1,5 +1,7 @@
 # Jacob Fratti, personal site
 
+> **Retired 2026-11-19.** The portfolio now lives at https://fratti-os.vercel.app as the public half of Personal OS (`FrattiJ/Fratti-OS`), where its content is read from the vault (`99 Meta/data/portfolio.json`) instead of `js/content.js`. `index.html` here is only a redirect that carries the `#section` or `#chapter/...` part of a link across. The rest of this repo is kept as history and is no longer served or updated. Edit the portfolio in the vault, not here.
+
 A design portfolio read like a manga volume. The cover is a splash page with the name lettered over focus lines. Each project is a chapter that opens into a reader and is told panel by panel. The career is a four-panel strip, and the rest is a character file and a few bonus pages.
 
 It is black ink on white paper with screentone and one spot colour, a price-sticker yellow. On a desktop the sections are paneled spreads with slanted gutters. On a phone the same panels stack into a vertical strip.
